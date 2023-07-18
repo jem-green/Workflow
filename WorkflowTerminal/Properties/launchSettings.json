@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JobsTerminal": {
+      "commandName": "Project",
+      "commandLineArgs": "--path \"c:\\programdata\\jobs\" --name \"genesis.job\"  --logpath \"D:\\LOGS\\Jobs\""
+    }
+  }
+}

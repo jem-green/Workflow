@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="WorkflowLibrary.BaseState">
+    <Position X="3" Y="2" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Enum Name="WorkflowLibrary.BaseState.StateType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>BaseState.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Enum Name="WorkflowLibrary.BaseState.StageType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>BaseState.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Enum Name="WorkflowLibrary.BaseState.DataKind" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>BaseState.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Enum Name="WorkflowLibrary.BaseState.DataType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>BaseState.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAA=</HashCode>
+      <FileName>BaseState.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WorkflowLibrary.Node">
+    <Position X="7.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIEAAAAAAAAABAAAAAADAQAAAAAAAAEAAAAAAAAAEA=</HashCode>
+      <FileName>Node.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="WorkflowLibrary.Link">
+    <Position X="10.75" Y="2" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AgBACAIAAAAggEAAIAhAAiwAABAMAAA0AAASBAAAAgA=</HashCode>
+      <FileName>Link.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WorkflowLibrary.Job">
+    <Position X="5.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Job.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="WorkflowLibrary.Messaging">
+    <Position X="5.25" Y="11.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Messaging.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
