@@ -46,7 +46,7 @@ namespace WorkflowLibrary
         #endregion Constructors
         #region Properties
 
-        #endregion Properites
+        #endregion Properties
         #region Methods
 
         public override void Start()
@@ -55,7 +55,8 @@ namespace WorkflowLibrary
             // Once the token has arrived then the state goes to ready
 
             bool thrown = false;
-            bool token = false;
+            Token token = new Token(_sessionId);
+            token.AddData("Token", false);
             string caught = "";
             int process = 0;
             cancel = false;
@@ -75,7 +76,7 @@ namespace WorkflowLibrary
                     {
                         foreach (Node node in @catch)
                         {
-                            if (token == false)
+                            if ((bool)token.SelectData("Token") == false)
                             {
                                 token = node.Link.GetItem();
                                 caught = node.Id;
@@ -85,7 +86,7 @@ namespace WorkflowLibrary
                                 break;
                             }
                         }
-                        if (token == false)
+                        if ((bool)token.SelectData("Token") == false)
                         {
                             Thread.Sleep(1000);
                         }
@@ -93,11 +94,11 @@ namespace WorkflowLibrary
                         {
                             TraceInternal.TraceVerbose("Caught message (" + token + ") from " + caught);
                         }
-                    } while (token == false);
+                    } while ((bool)token.SelectData("Token") == false);
                     this._state = StateType.Ready;
                 }
 
-                token = false;
+                token.UpdateData("Token",false);
 
                 TraceInternal.TraceVerbose("[" + _sessionId + "] State=" + StateDescription(this._state));
 
@@ -107,8 +108,7 @@ namespace WorkflowLibrary
 
                     process = 1;  // nothing to process?
 
-                    // This is where the descision is made to throw the message
-
+                    // This is where the decision is made to throw the message
                     // Possibly send the throw decision
 
                     if ((@throw.Count > 0) && (cancel == false) && (terminate == false))
@@ -118,7 +118,9 @@ namespace WorkflowLibrary
                             bool result = node.Link.Evaluate(replace.ReplaceGrouping(node.Link.Expression, _data, _hierarchy));
                             if (((result == true) && (process == 0)) || ((result == false) && (process > 0)))
                             {
-                                thrown = node.Link.PutItem(true);
+                                token = new Token(_sessionId);
+                                token.AddData("Token",true);
+                                thrown = node.Link.PutItem(token);
                                 TraceInternal.TraceVerbose("Throw message (true) to " + node.Id);
                             }
                         }
@@ -246,11 +248,11 @@ namespace WorkflowLibrary
         {
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
-            tempData = (ArrayList)_localData.Clone();                    // Preserve the localdata and clone.
-            _dataId = data.Add(tempData);                                // add the tempdate pointer to the data array list.
+            tempData = (ArrayList)_localData.Clone();                    // Preserve the local data and clone.
+            _dataId = data.Add(tempData);                                // add the temp date pointer to the data array list.
             if (_hierarchy.Count == 0)
             {
-                _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we dont have a process -1 means dont check now
+                _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we don't have a process -1 means don't check now
             }
             else
             {

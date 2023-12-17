@@ -29,7 +29,7 @@ namespace WorkflowLibrary
         #endregion Constructors
         #region Properties
 
-        #endregion Properites
+        #endregion Properties
         #region Methods
 
         public bool Add(Object task)
@@ -99,7 +99,8 @@ namespace WorkflowLibrary
             // Once the token has arrived then the state goes to ready
 
             bool thrown = false;
-            bool token = false;
+            Token token = new Token(sessionId);
+            token.AddData("token", true);
             string caught = "";
             int process = 0;
             cancel = false;
@@ -117,7 +118,7 @@ namespace WorkflowLibrary
                     {
                         foreach (Node node in @catch)
                         {
-                            if (token == false)
+                            if ((bool)token.SelectData("Token") == false)
                             {
                                 token = node.Link.GetItem();
                                 caught = node.Id;
@@ -128,7 +129,7 @@ namespace WorkflowLibrary
                             }
                         }
 
-                        if (token == false)
+                        if ((bool)token.SelectData("Token") == false)
                         {
                             Thread.Sleep(1000);
                         }
@@ -136,23 +137,26 @@ namespace WorkflowLibrary
                         {
                             TraceInternal.TraceVerbose("[" + sessionId + "] Caught message (" + token + ") from " + caught);
                         }
-                    } while (token == false);
+
+                    } while ((bool)token.SelectData("Token") == false);
                     _state = StateType.Ready;
                     TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
                 }
 
-                token = false;
+                token.UpdateData("Token", false);
 
                 TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(this._state));
-
+                
                 if (((cancel == false) && (terminate == false)) || (@catch.Count==0))
                 {
                     TraceInternal.TraceVerbose("[" + sessionId + "] Process:" + _id + "(" + _name + ")");
 
+                    // Run perform
+
                     process = this.Perform();
 
                     // Possibly send the throw event
-                    // check if terminated
+                    // check if cancelled or terminated
 
                     if ((@throw.Count > 0) && (cancel == false) && (terminate == false))
                     {
@@ -165,14 +169,16 @@ namespace WorkflowLibrary
                             }
                             if (((result == true) && (process == 0)) || ((result == false) && (process > 0)))
                             {
-                                thrown = node.Link.PutItem(true);
+                                token = new Token(sessionId);
+                                token.AddData("token", true);
+                                thrown = node.Link.PutItem(token);
                                 TraceInternal.TraceVerbose("[" + sessionId + "] Throw message (true) to " + node.Id);
                             }
                         }
                     }
 
                     // Extra logic required here to identify that the start event has fired once.
-                    // this could be acheived by overloaing a base class bit of logic
+                    // this could be achieved by overloading a base class bit of logic
 
                     terminate = true;
                 }
@@ -203,7 +209,7 @@ namespace WorkflowLibrary
             Debug.WriteLine("[" + sessionId + "] In Perform() " + _id + "(" + _name + ")");
 
             // Provide some logic to the processing
-            // by examining the errorcode and determining
+            // by examining the error code and determining
             // the true / false routes
 
             this._sessionId = sessionId;
@@ -212,7 +218,7 @@ namespace WorkflowLibrary
             int process = 0;
             int next = 0;
 
-            // What do we do if the jobs is allready active
+            // What do we do if the jobs is already active
 
             _state = StateType.Active;
             TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
@@ -345,11 +351,11 @@ namespace WorkflowLibrary
         {
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
-            tempData = (ArrayList)_localData.Clone();                    // Preserve the localdata and clone.
-            _dataId = data.Add(tempData);                                // add the tempdate pointer to the data array list.
+            tempData = (ArrayList)_localData.Clone();                    // Preserve the local data and clone.
+            _dataId = data.Add(tempData);                                // add the temp data pointer to the data array list.
             if (parentHierarchy.Count == 0)
             {
-                _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we dont have a process -1 means dont check now
+                _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we don't have a process -1 means don't check now
             }
             else
             {

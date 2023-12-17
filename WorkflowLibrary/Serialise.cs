@@ -194,9 +194,9 @@ namespace WorkflowLibrary
 
         public Collection<Object> DeserialiseFromXML(StageType dataType, string filename, string path, int level)
         {
-            // The deserialise needs to accept a type definition and return an appropiate
+            // The deserialise needs to accept a type definition and return an appropriate
             // collection containing these object and sub-objects. This will enable a check on 
-            // poorly structured xml.
+            // poorly structured XML.
 
             string current = "";
             //switch (dataType)
@@ -252,7 +252,8 @@ namespace WorkflowLibrary
 
                         XmlReader xmlReader = XmlReader.Create(fs, xmlSettings);
 
-                        string version = "1.0"; // Introduce a version number for compatibility although not recommended as new xml features should be ignored by older versions
+                        string version = "1.0"; // Introduce a version number for compatibility although not recommended as new
+                                                // XML features should be ignored by older versions
 
                         string element = "";
                         bool empty = false;
@@ -1349,7 +1350,13 @@ namespace WorkflowLibrary
                                                 //link.Enabled = linkEnabled;
                                             }
                                             break;
-                                            #endregion
+                                        #endregion
+                                        default:
+                                            {
+                                                stack.Push(current);
+                                                current = element;
+                                                break;
+                                            }
                                     }
                                     break;
 
@@ -2160,7 +2167,7 @@ namespace WorkflowLibrary
 
                                     if (item.Input.Kind == DataKind.pipe)
                                     {
-                                        // Now check the input connetor with any pipe starts
+                                        // Now check the input connector with any pipe starts
                                         
                                         foreach (object p in container)
                                         {
@@ -2178,7 +2185,7 @@ namespace WorkflowLibrary
 
                                     if (item.Output.Kind == DataKind.pipe)
                                     {
-                                        // Now check the output connetor with any pipe ends
+                                        // Now check the output connector with any pipe ends
                                         
                                         foreach (object p in container)
                                         {
