@@ -90,11 +90,8 @@ namespace WorkflowConsole
             Trace.AutoFlush = true;
             TraceFilter fileTraceFilter = new System.Diagnostics.EventTypeFilter(SourceLevels.Verbose);
             listener.Filter = fileTraceFilter;
-
             Trace.Listeners.Clear();
             Trace.Listeners.Add(listener);
-
-            // Trace to the console
 
             ConsoleTraceListener console = new ConsoleTraceListener();
             TraceFilter consoleTraceFilter = new System.Diagnostics.EventTypeFilter(SourceLevels.Verbose);

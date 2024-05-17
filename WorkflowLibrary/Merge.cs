@@ -43,7 +43,7 @@ namespace WorkflowLibrary
         #endregion Constructors
         #region Properties
 
-        #endregion Properites
+        #endregion Properties
         #region Methods
 
         public override void Start()
@@ -243,11 +243,11 @@ namespace WorkflowLibrary
         {
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
-            tempData = (ArrayList)_localData.Clone();                    // Preserve the localdata and clone.
-            _dataId = data.Add(tempData);                                // add the tempdate pointer to the data array list.
+            tempData = (ArrayList)_localData.Clone();                    // Preserve the local data and clone.
+            _dataId = data.Add(tempData);                                // add the temp date pointer to the data array list.
             if (_hierarchy.Count == 0)
             {
-                _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we dont have a process -1 means dont check now
+                _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we don't have a process -1 means don't check now
             }
             else
             {

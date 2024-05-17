@@ -29,7 +29,7 @@ namespace WorkflowLibrary
         #endregion Constructors
         #region Properties
 
-        #endregion Properites
+        #endregion Properties
         #region Methods
 
         public bool Add(Object task)
@@ -99,9 +99,8 @@ namespace WorkflowLibrary
             // Once the token has arrived then the state goes to ready
 
             bool thrown = false;
-            Token tokenData = new Token(sessionId);
-            bool token = false;
-            tokenData.AddData("token", token);
+            Token token = new Token(sessionId);
+            token.AddData("token", true);
             string caught = "";
             int process = 0;
             cancel = false;
@@ -119,7 +118,7 @@ namespace WorkflowLibrary
                     {
                         foreach (Node node in @catch)
                         {
-                            if (token == false)
+                            if ((bool)token.SelectData("Token") == false)
                             {
                                 tokenData = node.Link.GetItem();
                                 token = (bool)tokenData.SelectData("token");
@@ -131,7 +130,7 @@ namespace WorkflowLibrary
                             }
                         }
 
-                        if (token == false)
+                        if ((bool)token.SelectData("Token") == false)
                         {
                             Thread.Sleep(1000);
                         }
@@ -139,13 +138,12 @@ namespace WorkflowLibrary
                         {
                             TraceInternal.TraceVerbose("[" + sessionId + "] Caught message (" + tokenData + ") from " + caught);
                         }
-
                     } while (token == false);
                     _state = StateType.Ready;
                     TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
                 }
 
-                tokenData.UpdateData("token", false);
+                token = false;
 
                 TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(this._state));
                 
@@ -158,7 +156,7 @@ namespace WorkflowLibrary
                     process = this.Perform();
 
                     // Possibly send the throw event
-                    // check if canceled or terminated
+                    // check if terminated
 
                     if ((@throw.Count > 0) && (cancel == false) && (terminate == false))
                     {
@@ -171,9 +169,7 @@ namespace WorkflowLibrary
                             }
                             if (((result == true) && (process == 0)) || ((result == false) && (process > 0)))
                             {
-                                tokenData = new Token(sessionId);
-                                tokenData.AddData("token", true);
-                                thrown = node.Link.PutItem(tokenData);
+                                thrown = node.Link.PutItem(true);
                                 TraceInternal.TraceVerbose("[" + sessionId + "] Throw message (true) to " + node.Id);
                             }
                         }
@@ -211,7 +207,7 @@ namespace WorkflowLibrary
             Debug.WriteLine("[" + sessionId + "] In Perform() " + _id + "(" + _name + ")");
 
             // Provide some logic to the processing
-            // by examining the errorcode and determining
+            // by examining the error code and determining
             // the true / false routes
 
             this._sessionId = sessionId;
@@ -354,7 +350,7 @@ namespace WorkflowLibrary
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
             tempData = (ArrayList)_localData.Clone();                    // Preserve the localdata and clone.
-            _dataId = data.Add(tempData);                                // add the template pointer to the data array list.
+            _dataId = data.Add(tempData);                                // add the tempdate pointer to the data array list.
             if (parentHierarchy.Count == 0)
             {
                 _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we don't have a process -1 means don't check now
