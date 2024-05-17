@@ -1,120 +1,32 @@
 ﻿using System;
 using System.Collections;
-using System.Diagnostics;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Text;
 using TracerLibrary;
 
 namespace WorkflowLibrary
 {
-    public class Element : State
+    /// <summary>
+    /// Token to store data passed between Elements
+    /// </summary>
+    public class Token
     {
         #region Fields
 
-        protected string _id = "";
-        protected string _sessionId;
-        protected string _name = "";
-        protected string _description = "";
-
-        protected ArrayList _localData;
-        protected ArrayList tempData;
-        protected ArrayList _data;
-        protected ArrayList _hierarchy;
-        protected int _dataId;
-
-        protected bool cancel = false;
-        protected bool _enabled = true;
-        protected bool terminate = false;
+        private string _sessionId = "";
+        private ArrayList _data = new ArrayList();
 
         #endregion
         #region Constructors
-        public Element()
+
+        public Token(string sessionId)
         {
-            _dataId = _dataId + 1;
-            _data = new ArrayList();
-            _localData = new ArrayList();
-            tempData = new ArrayList();
-            _hierarchy = new ArrayList(4);
-            terminate = false;
-            cancel = false;
-            _enabled = false;
+            _sessionId = sessionId;
         }
 
-        public Element(string id)
-        {
-            _dataId = _dataId + 1;
-            _data = new ArrayList();
-            _localData = new ArrayList();
-            tempData = new ArrayList();
-            _hierarchy = new ArrayList(4);
-            terminate = false;
-            cancel = false;
-            _enabled = false;
-        }
         #endregion
         #region Properties
-
-        public string ID
-        {
-            get
-            {
-                return (_id);
-            }
-        }
-
-        public string Name
-        {
-            get
-            {
-                return (_name);
-            }
-            set
-            {
-                _name = value;
-            }
-        }
-
-        public bool Enabled
-        {
-            get
-            {
-                return (_enabled);
-            }
-            set
-            {
-                _enabled = value;
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                return (_description);
-            }
-            set
-            {
-                _description = value;
-            }
-        }
-
-        public ArrayList Hierarchy
-        {
-            get
-            {
-                return (_hierarchy);
-            }
-            set
-            {
-                _hierarchy = value;
-            }
-        }
-
-        public StateType State
-        {
-            get
-            {
-                return (_state);
-            }
-        }
 
         public ArrayList Data
         {
@@ -124,19 +36,7 @@ namespace WorkflowLibrary
             }
         }
 
-        public ArrayList LocalData
-        {
-            get
-            { 
-                return (_localData);
-            }
-            set
-            {
-                _localData = value;
-            }
-        }
-
-        #endregion Properties
+        #endregion
         #region Methods
 
         /// <summary>
@@ -166,21 +66,20 @@ namespace WorkflowLibrary
             return (add);
         }
 
-
         /// <summary>
         /// Add data to ArrayList of Dictionary objects
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public virtual bool AddData(string key, object value)
+        public bool AddData(string key, object value)
         {
             bool add = false;
             try
             {
-                TraceInternal.TraceVerbose("[" + _sessionId + "] Add local data: key=" + key + " value=" + value);
+                TraceInternal.TraceVerbose("[" + _sessionId + "] Add data: key=" + key + " value=" + value);
                 DictionaryEntry item = new DictionaryEntry(key, value);
-                _localData.Add(item);
+                _data.Add(item);
                 add = true;
             }
             catch { }
@@ -192,7 +91,7 @@ namespace WorkflowLibrary
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public virtual object SelectData(string key)
+        public object SelectData(string key)
         {
             object value = null;
             try
@@ -221,7 +120,7 @@ namespace WorkflowLibrary
             bool remove = false;
             try
             {
-                TraceInternal.TraceVerbose("[" + _sessionId + "] Select data: key=" + key);
+                TraceInternal.TraceVerbose("[" + _sessionId + "] Remove data: key=" + key);
                 for (int i = 0; i < _data.Count; i++)
                 {
                     DictionaryEntry item = (DictionaryEntry)_data[i];

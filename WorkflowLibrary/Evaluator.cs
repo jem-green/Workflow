@@ -5,14 +5,11 @@ using Microsoft.CSharp;
 using System.Text;
 using System.Reflection;
 
-namespace JobsLib
+namespace WorkflowLibrary
 {
     public class Evaluator
     {
         #region Fields
-
-        const string staticMethodName = "__foo";
-        object _Compiled = null;
 
         #endregion
         #region Constructor
@@ -38,46 +35,14 @@ namespace JobsLib
         #region Methods
         private void ConstructEvaluator(EvaluatorItem[] items)
         {
-            ICodeCompiler comp = (new CSharpCodeProvider().CreateCompiler());
-            CompilerParameters cp = new CompilerParameters();
-            cp.ReferencedAssemblies.Add("system.dll");
-            cp.ReferencedAssemblies.Add("system.data.dll");
-            cp.ReferencedAssemblies.Add("system.xml.dll");
-            cp.GenerateExecutable = false;
-            cp.GenerateInMemory = true;
-
-            StringBuilder code = new StringBuilder();
-            code.Append("using System; \n");
-            code.Append("using System.Data; \n");
-            code.Append("using System.Data.SqlClient; \n");
-            code.Append("using System.Data.OleDb; \n");
-            code.Append("using System.Xml; \n");
-            code.Append("namespace JobsLib { \n");
-            code.Append("  public class _Evaluator { \n");
-            foreach (EvaluatorItem item in items)
-            {
-                code.AppendFormat("    public {0} {1}() ", item.ReturnType.Name, item.Name);
-                code.Append("{ ");
-                code.AppendFormat("      return ({0}); ", item.Expression);
-                code.Append("}\n");
-            }
-            code.Append("} }");
-
-            CompilerResults cr = comp.CompileAssemblyFromSource(cp, code.ToString());
-            if (cr.Errors.HasErrors)
-            {
-                StringBuilder error = new StringBuilder();
-                error.Append("Error Compiling Expression: ");
-                foreach (CompilerError err in cr.Errors)
-                {
-                    error.AppendFormat("{0}\n", err.ErrorText);
-                }
-                throw new Exception("Error Compiling Expression: " + error.ToString());
-            }
-            Assembly a = cr.CompiledAssembly;
-            _Compiled = a.CreateInstance("JobsLib._Evaluator");
+            
         }
         public int EvaluateInt(string name)
+        {
+            return (int)Evaluate(name);
+        }
+
+        public int EvaluateDouble(string name)
         {
             return (int)Evaluate(name);
         }
@@ -94,32 +59,27 @@ namespace JobsLib
 
         public object Evaluate(string name)
         {
-            MethodInfo mi = _Compiled.GetType().GetMethod(name);
-            return mi.Invoke(_Compiled, null);
+            return ("");
         }
 
         static public int EvaluateToInteger(string code)
         {
-            Evaluator eval = new Evaluator(typeof(int), code, staticMethodName);
-            return (int)eval.Evaluate(staticMethodName);
+            return ((int)0);
         }
 
         static public string EvaluateToString(string code)
         {
-            Evaluator eval = new Evaluator(typeof(string), code, staticMethodName);
-            return (string)eval.Evaluate(staticMethodName);
+            return ((string)"");
         }
 
         static public bool EvaluateToBool(string code)
         {
-            Evaluator eval = new Evaluator(typeof(bool), code, staticMethodName);
-            return (bool)eval.Evaluate(staticMethodName);
+            return ((bool)true);
         }
 
         static public object EvaluateToObject(string code)
         {
-            Evaluator eval = new Evaluator(typeof(object), code, staticMethodName);
-            return eval.Evaluate(staticMethodName);
+            return (true);
         }
         #endregion
     }

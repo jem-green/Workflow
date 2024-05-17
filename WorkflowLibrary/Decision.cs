@@ -55,7 +55,8 @@ namespace WorkflowLibrary
             // Once the token has arrived then the state goes to ready
 
             bool thrown = false;
-            bool token = false;
+            Token token = new Token(_sessionId);
+            token.AddData("Token", false);
             string caught = "";
             int process = 0;
             cancel = false;
@@ -75,7 +76,7 @@ namespace WorkflowLibrary
                     {
                         foreach (Node node in @catch)
                         {
-                            if (token == false)
+                            if ((bool)token.SelectData("Token") == false)
                             {
                                 token = node.Link.GetItem();
                                 caught = node.Id;
@@ -85,7 +86,7 @@ namespace WorkflowLibrary
                                 break;
                             }
                         }
-                        if (token == false)
+                        if ((bool)token.SelectData("Token") == false)
                         {
                             Thread.Sleep(1000);
                         }
@@ -93,11 +94,11 @@ namespace WorkflowLibrary
                         {
                             TraceInternal.TraceVerbose("Caught message (" + token + ") from " + caught);
                         }
-                    } while (token == false);
+                    } while ((bool)token.SelectData("Token") == false);
                     this._state = StateType.Ready;
                 }
 
-                token = false;
+                token.UpdateData("Token",false);
 
                 TraceInternal.TraceVerbose("[" + _sessionId + "] State=" + StateDescription(this._state));
 
@@ -108,7 +109,6 @@ namespace WorkflowLibrary
                     process = 1;  // nothing to process?
 
                     // This is where the descision is made to throw the message
-
                     // Possibly send the throw decision
 
                     if ((@throw.Count > 0) && (cancel == false) && (terminate == false))
@@ -118,7 +118,9 @@ namespace WorkflowLibrary
                             bool result = node.Link.Evaluate(replace.ReplaceGrouping(node.Link.Expression, _data, _hierarchy));
                             if (((result == true) && (process == 0)) || ((result == false) && (process > 0)))
                             {
-                                thrown = node.Link.PutItem(true);
+                                token = new Token(_sessionId);
+                                token.AddData("Token",true);
+                                thrown = node.Link.PutItem(token);
                                 TraceInternal.TraceVerbose("Throw message (true) to " + node.Id);
                             }
                         }

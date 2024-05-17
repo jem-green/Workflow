@@ -23,21 +23,21 @@ namespace WorkflowLibrary
         /// waiting for an item.  If this value is -1, blocking is indefinite.
         /// </summary>
 
-        System.Collections.Generic.Queue<bool> queue = new System.Collections.Generic.Queue<bool>();
+        Queue<Token> _queue = new Queue<Token>();
 
-        private static int linkId;
-        private string from = "";
-        private string to = "";
-        private string expression = "";
+        private static int _linkId;
+        private string _from = "";
+        private string _to = "";
+        private string _expression = "";
 
         #endregion
         #region Constructors
 
         public Link()
         {
-            linkId = linkId + 1;
+            _linkId = _linkId + 1;
             _localData = new ArrayList();
-            _id = "link_" + linkId.ToString();
+            _id = "link_" + _linkId.ToString();
         }        
         
         public Link(string Id)
@@ -46,9 +46,9 @@ namespace WorkflowLibrary
             _id = Id;
             if (Id.StartsWith("link_"))
             {
-                if (linkId < Convert.ToInt16(Id.Substring(5)))
+                if (_linkId < Convert.ToInt16(Id.Substring(5)))
                 {
-                    linkId = Convert.ToInt16(Id.Substring(5));
+                    _linkId = Convert.ToInt16(Id.Substring(5));
                 }
             }
         }
@@ -58,18 +58,18 @@ namespace WorkflowLibrary
 
         static Link()
         {
-            linkId = -1;
+            _linkId = -1;
         }
 
         public string From
         {
             get
             {
-                return (from);
+                return (_from);
             }
             set
             {
-                from = value;
+                _from = value;
             }
         }
 
@@ -77,11 +77,11 @@ namespace WorkflowLibrary
         {
             get
             {
-                return (to);
+                return (_to);
             }
             set
             {
-                to = value;
+                _to = value;
             }
         }
 
@@ -89,23 +89,36 @@ namespace WorkflowLibrary
         {
             get
             {
-                return (expression);
+                return (_expression);
             }
             set
             {
-                expression = value;
+                _expression = value;
             }
         }
 
         #endregion Properites
         #region Methods
 
-        public bool Evaluate(string excpression)
+        /// <summary>
+        ///  
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public bool Evaluate(string expression)
         {
             bool evaluate = true;
-            if (expression.Length > 0)
+            if (_expression.Length > 0)
             {
-                //evaluate = Evaluator.EvaluateToBool(expression);
+                try
+                {
+                    evaluate = Evaluator.EvaluateToBool(expression);
+                }
+                catch (Exception ex)
+                {
+                    // May not evaluate to true/false
+                    TraceInternal.TraceVerbose(ex.ToString());
+                }
             }
             return (evaluate);
         }
@@ -116,7 +129,7 @@ namespace WorkflowLibrary
         /// <returns>Count of items on the queue</returns>
         public int Count()
         {
-            return (queue.Count);
+            return (_queue.Count);
         }
 
         /// <summary>
@@ -125,34 +138,34 @@ namespace WorkflowLibrary
         /// <param name="maxWait"></param>
         /// <returns></returns>
 
-        public bool PeekItem(int maxWait)
+        public Token PeekItem(int maxWait)
         {
-            if (queue.Count == 0)
+            if (_queue.Count == 0)
             {
                 if (maxWait == 0)
                 {
-                    return default(bool);
+                    return default(Token);
                 }
-                Monitor.Wait(queue, maxWait);
-                if (queue.Count == 0)
+                Monitor.Wait(_queue, maxWait);
+                if (_queue.Count == 0)
                 {
-                    return default(bool);
+                    return default(Token);
                 }
             }
-            return queue.Peek();
+            return _queue.Peek();
         }
 
         /// <summary>
         /// Post a message to the queue.
         /// </summary>
-        public bool PutItem(bool item)
+        public bool PutItem(Token item)
         {
-           lock (queue)
+           lock (_queue)
            {
-               queue.Enqueue(item);
-               if (queue.Count == 1)
+               _queue.Enqueue(item);
+               if (_queue.Count == 1)
                {
-                   Monitor.Pulse(queue);
+                   Monitor.Pulse(_queue);
                }
            }
            return (true);
@@ -162,7 +175,7 @@ namespace WorkflowLibrary
         /// Immediate message retrieve from the queue
         /// </summary>
         /// <returns>The next item in the queue, or default(T) if queue is empty</returns>
-        public bool GetItem()
+        public Token GetItem()
         {
             return (GetItem(0));
         }
@@ -172,23 +185,23 @@ namespace WorkflowLibrary
         /// </summary>
         /// <param name="maxWait">Number of milliseconds to block if nothing is available. -1 means "block indefinitely"</param>
         /// <returns>The next item in the queue, or default(T) if queue is empty</returns>
-        public bool GetItem(int maxWait)
+        public Token GetItem(int maxWait)
         {
-           lock (queue)
+           lock (_queue)
            {
-               if (queue.Count == 0)
+               if (_queue.Count == 0)
                {
                    if (maxWait == 0)
                    {
-                       return default(bool);
+                       return default(Token);
                    }
-                   Monitor.Wait(queue, maxWait);
-                   if (queue.Count == 0)
+                   Monitor.Wait(_queue, maxWait);
+                   if (_queue.Count == 0)
                    {
-                       return default(bool);
+                       return default(Token);
                    }
                }
-               return queue.Dequeue();
+               return _queue.Dequeue();
            }
        }
 

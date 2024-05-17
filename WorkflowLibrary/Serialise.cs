@@ -196,7 +196,7 @@ namespace WorkflowLibrary
         {
             // The deserialise needs to accept a type definition and return an appropiate
             // collection containing these object and sub-objects. This will enable a check on 
-            // poorly structured xml.
+            // poorly structured XML.
 
             string current = "";
             //switch (dataType)
@@ -1349,7 +1349,13 @@ namespace WorkflowLibrary
                                                 //link.Enabled = linkEnabled;
                                             }
                                             break;
-                                            #endregion
+                                        #endregion
+                                        default:
+                                            {
+                                                stack.Push(current);
+                                                current = element;
+                                                break;
+                                            }
                                     }
                                     break;
 

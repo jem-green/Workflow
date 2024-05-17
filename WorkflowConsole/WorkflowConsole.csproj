@@ -32,7 +32,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <TargetZone>LocalIntranet</TargetZone>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <PublishUrl>C:\Program Files %28x86%29\Workflow\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>

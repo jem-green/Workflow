@@ -101,8 +101,8 @@ namespace WorkflowService
 
             string jobId = "";
 
-            Parameter<string> appPath = new Parameter<string>("");
-            Parameter<string> appName = new Parameter<string>("process.xml");
+            Parameter<string> appPath = new Parameter<string>("appPath","");
+            Parameter<string> appName = new Parameter<string>("appName","process.xml");
             appPath.Value = System.Reflection.Assembly.GetExecutingAssembly().Location;
 
             int pos = appPath.Value.ToString().LastIndexOf(Path.DirectorySeparatorChar);
@@ -112,8 +112,8 @@ namespace WorkflowService
                 appPath.Source = Parameter<string>.SourceType.App;
             }
 
-            Parameter<string> logPath = new Parameter<string>("");
-            Parameter<string> logName = new Parameter<string>("workflowservice");
+            Parameter<string> logPath = new Parameter<string>("logName", "");
+            Parameter<string> logName = new Parameter<string>("logName","workflowservice");
             logPath.Value = System.Reflection.Assembly.GetExecutingAssembly().Location;
             pos = logPath.Value.ToString().LastIndexOf(Path.DirectorySeparatorChar);
             if (pos > 0)
@@ -122,7 +122,7 @@ namespace WorkflowService
                 logPath.Source = Parameter<string>.SourceType.App;
             }
 
-            Parameter<SourceLevels> traceLevels = new Parameter<SourceLevels>();
+            Parameter<SourceLevels> traceLevels = new Parameter<SourceLevels>("traceLevels");
             traceLevels.Value = TraceInternal.TraceLookup("VERBOSE");
             traceLevels.Source = Parameter<SourceLevels>.SourceType.App;
 

@@ -98,10 +98,15 @@ namespace WorkflowTest
              */
         }
 
-        public void a()
+        public static void MultiChoice()
         {
             /*
-             * 
+             * Pattern WCP-6 (Multi-Choice)
+             * Description The divergence of a branch into two or more branches. When the
+             * incoming branch is enabled, the thread of control is passed to one or more of the
+             * outgoing branches based on the outcome of distinct logical expressions associated
+             * with each of the branches.
+             * Synonyms Conditional routing, selection, OR-split, multiple choice.
              */
         }
 

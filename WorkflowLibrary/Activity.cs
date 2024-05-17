@@ -99,7 +99,9 @@ namespace WorkflowLibrary
             // Once the token has arrived then the state goes to ready
 
             bool thrown = false;
+            Token tokenData = new Token(sessionId);
             bool token = false;
+            tokenData.AddData("token", token);
             string caught = "";
             int process = 0;
             cancel = false;
@@ -119,7 +121,8 @@ namespace WorkflowLibrary
                         {
                             if (token == false)
                             {
-                                token = node.Link.GetItem();
+                                tokenData = node.Link.GetItem();
+                                token = (bool)tokenData.SelectData("token");
                                 caught = node.Id;
                             }
                             else
@@ -134,25 +137,28 @@ namespace WorkflowLibrary
                         }
                         else
                         {
-                            TraceInternal.TraceVerbose("[" + sessionId + "] Caught message (" + token + ") from " + caught);
+                            TraceInternal.TraceVerbose("[" + sessionId + "] Caught message (" + tokenData + ") from " + caught);
                         }
+
                     } while (token == false);
                     _state = StateType.Ready;
                     TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
                 }
 
-                token = false;
+                tokenData.UpdateData("token", false);
 
                 TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(this._state));
-
+                
                 if (((cancel == false) && (terminate == false)) || (@catch.Count==0))
                 {
                     TraceInternal.TraceVerbose("[" + sessionId + "] Process:" + _id + "(" + _name + ")");
 
+                    // Run perform
+
                     process = this.Perform();
 
                     // Possibly send the throw event
-                    // check if terminated
+                    // check if canceled or terminated
 
                     if ((@throw.Count > 0) && (cancel == false) && (terminate == false))
                     {
@@ -165,14 +171,16 @@ namespace WorkflowLibrary
                             }
                             if (((result == true) && (process == 0)) || ((result == false) && (process > 0)))
                             {
-                                thrown = node.Link.PutItem(true);
+                                tokenData = new Token(sessionId);
+                                tokenData.AddData("token", true);
+                                thrown = node.Link.PutItem(tokenData);
                                 TraceInternal.TraceVerbose("[" + sessionId + "] Throw message (true) to " + node.Id);
                             }
                         }
                     }
 
                     // Extra logic required here to identify that the start event has fired once.
-                    // this could be acheived by overloaing a base class bit of logic
+                    // this could be achieved by overloading a base class bit of logic
 
                     terminate = true;
                 }
@@ -212,7 +220,7 @@ namespace WorkflowLibrary
             int process = 0;
             int next = 0;
 
-            // What do we do if the jobs is allready active
+            // What do we do if the jobs is already active
 
             _state = StateType.Active;
             TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
@@ -346,10 +354,10 @@ namespace WorkflowLibrary
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
             tempData = (ArrayList)_localData.Clone();                    // Preserve the localdata and clone.
-            _dataId = data.Add(tempData);                                // add the tempdate pointer to the data array list.
+            _dataId = data.Add(tempData);                                // add the template pointer to the data array list.
             if (parentHierarchy.Count == 0)
             {
-                _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we dont have a process -1 means dont check now
+                _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we don't have a process -1 means don't check now
             }
             else
             {
