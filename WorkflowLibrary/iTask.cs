@@ -7,6 +7,7 @@ namespace WorkflowLibrary
 {
     interface ITask
     {
+        #region Properties
         string ID { get; }
         string Name { get; set; }
         bool Enabled { get; set; }
@@ -15,10 +16,13 @@ namespace WorkflowLibrary
         string Previous {get;set; }
         ArrayList LocalData {get; }
         State.StateType State { get; }
+        #endregion
+        #region Methods
         void Activate();
         bool Add(Item item);
         bool AddData(string key, object value);
         void Cancel();
+        object Clone();
         int Perform();
         int Perform(int index);
         int Perform(string sessionId);
@@ -31,5 +35,7 @@ namespace WorkflowLibrary
         void Start(int index, string sessionId);
         void Terminate();
         void Update(ref ArrayList data, ArrayList hierarchy);
+
+        #endregion
     }
 }

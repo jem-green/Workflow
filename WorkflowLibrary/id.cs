@@ -7,7 +7,7 @@ namespace WorkflowLibrary
     public static class Id
     {
         /// <summary>
-        /// Generates a unique id based on the currrent ticks
+        /// Generates a unique id based on the current ticks
         /// </summary>
         /// <returns>unique Id</returns>
         public static string UniqueCode()

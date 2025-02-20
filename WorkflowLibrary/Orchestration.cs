@@ -50,7 +50,7 @@ namespace WorkflowLibrary
             }
         }
 
-        #endregion Properites
+        #endregion Properties
         #region Methods
 
         public bool AddThrow(Node node)

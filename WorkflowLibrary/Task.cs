@@ -69,7 +69,7 @@ namespace WorkflowLibrary
             }
         }
 
-        #endregion Properites
+        #endregion Properties
         #region Methods
 
         public bool Add(Object item)
@@ -175,10 +175,10 @@ namespace WorkflowLibrary
             _state = StateType.Active;
             cancel = false;
 
-            // There are two modes of operation here the simplistic each item is syncronus and
-            // this is expanding to a asyncronus solution where each item runs in its own thread and messging could be used to collaborate
+            // There are two modes of operation here the simplistic each item is synchronous and
+            // this is expanding to a asynchronous solution where each item runs in its own thread and messaging could be used to collaborate
             // between the items. Is this the best place for this. It might be better to have the jobs in separate threads and still have item
-            // colaboration.
+            // collaboration.
 
             foreach (Item item in items)
             {
@@ -188,7 +188,7 @@ namespace WorkflowLibrary
                     process = item.Perform(sessionId);
                     if (process == 0)
                     {
-                        TraceInternal.TraceVerbose("[" + sessionId + "] Ok (" + process + ")");
+                        TraceInternal.TraceVerbose("[" + sessionId + "] OK (" + process + ")");
                     }
                     else
                     {
@@ -198,11 +198,13 @@ namespace WorkflowLibrary
                 }
                 else
                 {
-                    TraceInternal.TraceVerbose("[" + sessionId + "] Canceled");
+                    TraceInternal.TraceVerbose("[" + sessionId + "] Cancelled");
                     break;
                 }
             }
+
             _state = StateType.Inactive;
+            TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
             Debug.WriteLine("[" + sessionId + "] Out Perform() " + _id + "(" + _name + ")");
             return (process);
         }
@@ -211,11 +213,11 @@ namespace WorkflowLibrary
         {
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
-            tempData = (ArrayList)_localData.Clone();            // Preserve the localdata and clone.
-            _dataId = data.Add(tempData);                        // add the tempdata pointer to the data array list.
-            _hierarchy = (ArrayList)parentHierarchy.Clone();      // Copy the parent hierarchy
+            tempData = (ArrayList)_localData.Clone();           // Preserve the localdata and clone.
+            _dataId = data.Add(tempData);                       // add the tempdata pointer to the data array list.
+            _hierarchy = (ArrayList)parentHierarchy.Clone();    // Copy the parent hierarchy
 
-            _hierarchy.Insert((int)StageType.Task, _dataId);                              // Add the tempdata reference to the end
+            _hierarchy.Insert((int)StageType.Task, _dataId);    // Add the tempdata reference to the end
                         
             //if (Trace. log.IsDebugEnabled == true)
             //{

@@ -6,6 +6,8 @@ namespace WorkflowLibrary
 {
     public interface IActivity
     {
+        #region Properties
+
         State.StateType State { get; }
         string ID { get; }
         string Name { get; set; }
@@ -14,6 +16,10 @@ namespace WorkflowLibrary
         ArrayList Data { get; }
         List<Node> Throw { get; }
         List<Node> Catch { get; }
+
+        #endregion
+        #region Methods
+
         bool AddCatch(Node value);
         bool AddThrow(Node value);
         bool AddData(string key, object value);
@@ -26,11 +32,13 @@ namespace WorkflowLibrary
         int Perform(int elementIndex, string sessionId);
         void Update();
         void Update(ref ArrayList data, ArrayList parentHierarchy);
-        void Terminate();
         void Start();
         void Start(string sessionId);
         void Start(int activityIndex);
         void Start(int activityIndex, string sessionId);
+        void Terminate();
         object Clone();
+
+        #endregion
     }
 }

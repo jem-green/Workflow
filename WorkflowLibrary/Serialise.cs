@@ -49,6 +49,7 @@ namespace WorkflowLibrary
         }
         #endregion
         #region Methods
+
         public int SerializeToXML(Collection<Job> jobs)
         {
             return (SerializeToXML(jobs, _filename, _path));
@@ -2120,6 +2121,7 @@ namespace WorkflowLibrary
                     catch { }
 
                     // Check the catch
+
                     try
                     {
                         foreach (Node node in e.Catch)

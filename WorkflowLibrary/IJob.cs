@@ -7,19 +7,25 @@ namespace WorkflowLibrary
 {
     interface IJob
     {
+        #region Properties
+
+        List<Node> Catch { get; }
+        ArrayList Data { get; }
+        string Description { get; set; }
+        bool Enabled { get; set; }
         string ID { get; }
         string Name { get; set; }
-        bool Enabled { get; set; }
-        string Description { get; set; }
-        ArrayList Data {get; }
-        List<Node> Throw {get; }
-        List<Node> Catch {get; }
         State.StateType State { get; }
+        List<Node> Throw {get; }
+
+        #endregion
+        #region Methods
         void Activate();
         bool Add(Task task);
         bool AddCatch(Node value);
         bool AddData(string key, object value);
         bool AddThrow(Node value);
+        object Clone();
         void Cancel();
         int Perform();
         int Perform(int index);
@@ -33,6 +39,7 @@ namespace WorkflowLibrary
         void Start(string sessionId);
         void Start(int index, string sessionId);
         void Terminate();
+        #endregion
     }
 }
 

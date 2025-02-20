@@ -20,7 +20,8 @@ namespace WorkflowConsole
         static private HandlerRoutine ctrlCHandler;
 
         #endregion
-        #region unmanaged
+        #region Unmanaged
+
         // Declare the SetConsoleCtrlHandler function
         // as external and receiving a delegate.
 
@@ -318,11 +319,13 @@ namespace WorkflowConsole
                             }
                         case "/I":
                         case "--id":
-                            jobId = args[item + 1];
-                            jobId = jobId.TrimStart('"');
-                            jobId = jobId.TrimEnd('"');
-                            TraceInternal.TraceVerbose("Use command value id=" + jobId);
-                            break;
+                            {
+                                jobId = args[item + 1];
+                                jobId = jobId.TrimStart('"');
+                                jobId = jobId.TrimEnd('"');
+                                TraceInternal.TraceVerbose("Use command value id=" + jobId);
+                                break;
+                            }
                     }
                 }
 
@@ -359,7 +362,7 @@ namespace WorkflowConsole
             TraceInternal.TraceInformation("Use Log Path=" + logPath.Value);
 
 
-            // read in the xml config file and process the workflow
+            // read in the XML config file and process the workflow
 
             Serialise serialise = new Serialise();
             if (appPath.Value.ToString().Length > 0)
@@ -371,6 +374,7 @@ namespace WorkflowConsole
             {
                 serialise.Filename = appName.Value.ToString();
             }
+
             processData = serialise.DeserialiseProcess();
 
             if (processData != null)
@@ -416,6 +420,10 @@ namespace WorkflowConsole
                         Thread eventThread = new Thread(new ThreadStart(e.Start));
                         TraceInternal.TraceInformation("Start event " + e.ID);
                         eventThread.Start();
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
                     }
                 }
             }
@@ -537,6 +545,7 @@ namespace WorkflowConsole
             return (true);
 
         }
+
         #endregion
     }
 }

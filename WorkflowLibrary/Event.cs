@@ -7,7 +7,7 @@ namespace WorkflowLibrary
     /// <summary>
     /// Event class derived from a standard Activity
     /// </summary>
-    public class Event : Activity, IActivity, IEnumerable, ICloneable
+    public class Event : Activity, IActivity, IEnumerable, ICloneable, IEvent
     {
         #region Fields
         private static int eventId;
@@ -35,7 +35,7 @@ namespace WorkflowLibrary
         #endregion Constructors
         #region Properties
 
-        #endregion Properites
+        #endregion Properties
         #region Methods
 
         #endregion Methods

@@ -5,6 +5,7 @@ using System.IO;
 using TracerLibrary;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace WorkflowLibrary
 {
@@ -15,24 +16,40 @@ namespace WorkflowLibrary
     {
         #region Fields
 
+        private static int _nodeId;
         private Link link;
-        private string id;
+        private string _id;
         bool isLinked;
 
         #endregion
         #region Constructors
         public Node()
         {
+            _nodeId = _nodeId + 1;
+            _id = "node_" + _nodeId.ToString();
         }
 
-        public Node(string id)
+        public Node(string Id)
         {
-            this.id = id;
+            _id = Id;
             isLinked = false;
+            if (Id.StartsWith("node_"))
+            {
+                if (_nodeId < Convert.ToInt16(Id.Substring(5)))
+                {
+                    _nodeId = Convert.ToInt16(Id.Substring(5));
+
+                }
+            }
         }
 
         #endregion
         #region Properties
+
+        static Node()
+        {
+            _nodeId = -1;
+        }
 
         public Link Link
         {
@@ -51,11 +68,11 @@ namespace WorkflowLibrary
         {
             get
             {
-                return (id);
+                return (_id);
             }
             set
             {
-                id = value;
+                _id = value;
             }
         }
 

@@ -99,8 +99,9 @@ namespace WorkflowLibrary
             // Once the token has arrived then the state goes to ready
 
             bool thrown = false;
-            Token token = new Token(sessionId);
-            token.AddData("token", true);
+            Token tokenData = new Token(sessionId);
+            bool token = false;
+            tokenData.AddData("token", token);
             string caught = "";
             int process = 0;
             cancel = false;
@@ -118,7 +119,7 @@ namespace WorkflowLibrary
                     {
                         foreach (Node node in @catch)
                         {
-                            if ((bool)token.SelectData("Token") == false)
+                            if (token == false)
                             {
                                 tokenData = node.Link.GetItem();
                                 token = (bool)tokenData.SelectData("token");
@@ -130,7 +131,7 @@ namespace WorkflowLibrary
                             }
                         }
 
-                        if ((bool)token.SelectData("Token") == false)
+                        if (token == false)
                         {
                             Thread.Sleep(1000);
                         }
@@ -143,7 +144,7 @@ namespace WorkflowLibrary
                     TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
                 }
 
-                token = false;
+                tokenData.UpdateData("token", false);
 
                 TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(this._state));
                 
@@ -156,7 +157,7 @@ namespace WorkflowLibrary
                     process = this.Perform();
 
                     // Possibly send the throw event
-                    // check if terminated
+                    // check if cancelled or terminated
 
                     if ((@throw.Count > 0) && (cancel == false) && (terminate == false))
                     {
@@ -169,7 +170,9 @@ namespace WorkflowLibrary
                             }
                             if (((result == true) && (process == 0)) || ((result == false) && (process > 0)))
                             {
-                                thrown = node.Link.PutItem(true);
+                                tokenData = new Token(sessionId);
+                                tokenData.AddData("token", true);
+                                thrown = node.Link.PutItem(tokenData);
                                 TraceInternal.TraceVerbose("[" + sessionId + "] Throw message (true) to " + node.Id);
                             }
                         }
@@ -231,106 +234,114 @@ namespace WorkflowLibrary
                 _hierarchy.Clear();                              // Clear out the hierarchy
                 this.Update();                                  // Replicate the data
             }
-
-            try
+            if (tasks.Count > 0)
             {
-                do
+                try
                 {
-                    task = tasks.GetValue(taskIndex);
-                    if ((cancel == false) && (terminate == false))
+                    do
                     {
-                        TraceInternal.TraceInformation("[" + sessionId + "] Process Task:" + task.ID + "(" + task.Name + ")");
-                        process = task.Perform(sessionId);
                         if ((cancel == false) && (terminate == false))
                         {
-                            if (process == 0)
+                            task = tasks.GetValue(taskIndex);
+                            TraceInternal.TraceInformation("[" + sessionId + "] Process Task:" + task.ID + "(" + task.Name + ")");
+                            process = task.Perform(sessionId);
+                            if ((cancel == false) && (terminate == false))
                             {
-                                nextTask = task.Next;
-                                TraceInternal.TraceVerbose("[" + sessionId + "] Next Task " + nextTask);
-                                if (nextTask.Length == 0)
+                                if (process == 0)
                                 {
-                                    taskIndex = taskIndex + 1;
-                                }
-                                else
-                                {
-                                    // ideally want to support the legacy way for working so if its numeric
-                                    // then jump to the task index.
-
-                                    if (int.TryParse(nextTask, out next))
+                                    nextTask = task.Next;
+                                    TraceInternal.TraceVerbose("[" + sessionId + "] Next Task " + nextTask);
+                                    if (nextTask.Length == 0)
                                     {
-                                        taskIndex = next;
+                                        taskIndex = taskIndex + 1;
                                     }
                                     else
                                     {
-                                        taskIndex = tasks.IndexOf(nextTask);
-                                    }
-                                }
-                                TraceInternal.TraceVerbose("[" + sessionId + "] Task Index " + taskIndex);
+                                        // ideally want to support the legacy way for working so if its numeric
+                                        // then jump to the task index.
 
+                                        if (int.TryParse(nextTask, out next))
+                                        {
+                                            taskIndex = next;
+                                        }
+                                        else
+                                        {
+                                            taskIndex = tasks.IndexOf(nextTask);
+                                        }
+                                    }
+                                    TraceInternal.TraceVerbose("[" + sessionId + "] Task Index " + taskIndex);
+
+                                }
+                                else
+                                {
+                                    nextTask = task.Previous;
+                                    TraceInternal.TraceVerbose("[" + sessionId + "] Previous Task " + nextTask);
+                                    if (nextTask.Length == 0)
+                                    {
+                                        taskIndex = taskIndex - 1;
+                                    }
+                                    else
+                                    {
+                                        if (int.TryParse(nextTask, out next))
+                                        {
+                                            taskIndex = next;
+                                        }
+                                        else
+                                        {
+                                            taskIndex = tasks.IndexOf(nextTask);
+                                        }
+                                    }
+                                    TraceInternal.TraceVerbose("[" + sessionId + "] Task Index " + taskIndex);
+                                }
+
+                                if (taskIndex < 0)
+                                {
+                                    TraceInternal.TraceVerbose("[" + sessionId + "] Completed");
+                                    _state = StateType.Completed;
+                                }
+                                else if (taskIndex == 0)
+                                {
+                                    TraceInternal.TraceVerbose("[" + sessionId + "] Reset data");    // 
+                                    _data.Clear();                                   // Clear out the data
+                                    _data = (ArrayList)_localData.Clone();            // Clone the local data
+                                    _hierarchy.Clear();                              // Clear out the hierarchy
+                                    this.Update();                                  // Replicate the data
+                                    sessionId = Id.UniqueCode();                    // Create a new session id assuming the job restarts
+                                }
+                                else if (taskIndex >= tasks.Count)
+                                {
+                                    TraceInternal.TraceVerbose("[" + sessionId + "] Completed");
+                                    _state = StateType.Completed;
+                                }
                             }
                             else
                             {
-                                nextTask = task.Previous;
-                                TraceInternal.TraceVerbose("[" + sessionId + "] Previous Task " + nextTask);
-                                if (nextTask.Length == 0)
-                                {
-                                    taskIndex = taskIndex - 1;
-                                }
-                                else
-                                {
-                                    if (int.TryParse(nextTask, out next))
-                                    {
-                                        taskIndex = next;
-                                    }
-                                    else
-                                    {
-                                        taskIndex = tasks.IndexOf(nextTask);
-                                    }
-                                }
-                                TraceInternal.TraceVerbose("[" + sessionId + "] Task Index " + taskIndex);
-                            }
-
-                            if (taskIndex < 0)
-                            {
-                                TraceInternal.TraceVerbose("[" + sessionId + "] Completed");
-                                _state = StateType.Completed;
-                            }
-                            else if (taskIndex == 0)
-                            {
-                                TraceInternal.TraceVerbose("[" + sessionId + "] Reset data");    // 
-                                _data.Clear();                                   // Clear out the data
-                                _data = (ArrayList)_localData.Clone();            // Clone the local data
-                                _hierarchy.Clear();                              // Clear out the hierarchy
-                                this.Update();                                  // Replicate the data
-                                sessionId = Id.UniqueCode();                    // Create a new session id assuming the job restarts
-                            }
-                            else if (taskIndex >= tasks.Count)
-                            {
-                                TraceInternal.TraceVerbose("[" + sessionId + "] Completed");
-                                _state = StateType.Completed;
+                                TraceInternal.TraceVerbose("[" + sessionId + "] Cancel Event");
+                                break;
                             }
                         }
+                        else
+                        {
+                            TraceInternal.TraceVerbose("[" + sessionId + "] Cancel Event");
+                            break;
+                        }
+                    }
+                    while ((_state == StateType.Active) && (cancel == false) && (terminate == false));
+
+                    if (process == 0)
+                    {
+                        TraceInternal.TraceVerbose("[" + sessionId + "] OK (" + process + ")");
                     }
                     else
                     {
-                        TraceInternal.TraceVerbose("[" + sessionId + "] Cancel Event");
-                        break;
+                        TraceInternal.TraceVerbose("[" + sessionId + "] Error (" + process + ")");
                     }
                 }
-                while ((_state == StateType.Active) && (cancel==false) && (terminate==false));
-                if (process == 0)
+                catch (Exception e)
                 {
-                    TraceInternal.TraceVerbose("[" + sessionId + "] Ok (" + process + ")");
+                    Trace.TraceError("[" + sessionId + "] Other (" + process + ")");
+                    TraceInternal.TraceVerbose("[" + sessionId + "] Exception=" + e.ToString());
                 }
-                else
-                {
-                    TraceInternal.TraceVerbose("[" + sessionId + "] Error (" + process + ")");
-                }
-            }
-            catch (Exception e)
-            {
-                Trace.TraceError("[" + sessionId + "] Other (" + process + ")");
-                TraceInternal.TraceVerbose("[" + sessionId + "] Exception=" + e.ToString());
             }
             _state = StateType.Inactive;
             TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));

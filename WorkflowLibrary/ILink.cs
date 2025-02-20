@@ -7,10 +7,15 @@ namespace WorkflowLibrary
 {
     interface ILink
     {
-        string From {get;set; }
-        string To {get;set; }
+        #region Properties
+
         string Expression { get; set; }
+        string From {get;set; }
+        string ID { get; }
         State.StateType State { get; }
+        string To {get;set; }
+
+        #endregion
     }
 }
 

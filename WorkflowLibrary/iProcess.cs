@@ -7,12 +7,18 @@ namespace WorkflowLibrary
 {
     public interface IProcess
     {
+        #region Properties
+
         string ID { get; }
         string Name { get; set; }
         bool Enabled { get; set; }
         string Description { get; set; }
         ArrayList Data { get; }
         State.StateType State { get; }
+
+        #endregion
+        #region Methods
+
         bool AddData(string key, object value);
         bool RemoveData(string key);
         bool Add(IActivity activity);
@@ -27,6 +33,8 @@ namespace WorkflowLibrary
         void Terminate();
         void Start();
         object Clone();
+
+        #endregion
     }
 }
 

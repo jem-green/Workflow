@@ -108,7 +108,7 @@ namespace WorkflowLibrary
 
                     process = 1;  // nothing to process?
 
-                    // This is where the descision is made to throw the message
+                    // This is where the decisions is made to throw the message
                     // Possibly send the throw decision
 
                     if ((@throw.Count > 0) && (cancel == false) && (terminate == false))
@@ -152,7 +152,7 @@ namespace WorkflowLibrary
                     process = item.Perform();
                     if (process == 0)
                     {
-                        TraceInternal.TraceVerbose("[" + sessionId + "] Ok (" + process + ")");
+                        TraceInternal.TraceVerbose("[" + sessionId + "] OK (" + process + ")");
                     }
                     else
                     {

@@ -75,7 +75,7 @@ namespace WorkflowLibrary
 
         public virtual object Clone()
         {
-            return this.MemberwiseClone();
+            return ((Action)this.MemberwiseClone());
         }
 
         #endregion Methods

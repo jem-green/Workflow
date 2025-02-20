@@ -55,7 +55,7 @@ namespace WorkflowLibrary
         }
 
         #endregion Constructors
-        #region Properites
+        #region Properties
 
         public string Application
         {
@@ -141,7 +141,7 @@ namespace WorkflowLibrary
             }
         }
 
-        #endregion Properites
+        #endregion Properties
         #region Methods
 
         public override bool AddData(string key, object value)
@@ -236,7 +236,7 @@ namespace WorkflowLibrary
             this._sessionId = sessionId;
             int process = 0;    
             cancel = false;
-            received = false;   // 8/2/2015 JPG fix early trigger of received status as process spead has increased
+            received = false;   // 8/2/2015 JPG fix early trigger of received status as process speed has increased
                                 // Assumption is that data has always been received
             
             Groupings replace = new Groupings();
@@ -245,7 +245,7 @@ namespace WorkflowLibrary
 
             proc = new System.Diagnostics.Process();
 
-            // experimentally can set the processor afinity 
+            // experimentally can set the processor affinity 
 
             //long affinityMask = 1;
             //proc.ProcessorAffinity = (IntPtr)affinityMask;
@@ -269,7 +269,7 @@ namespace WorkflowLibrary
             }
             else
             {
-                // 08/02/201 JPG If no output expected then need to force throught the recevied status
+                // 08/02/201 JPG If no output expected then need to force through the received status
                 received = true;
             }
 
@@ -359,7 +359,7 @@ namespace WorkflowLibrary
 
                 if (process == 0)
                 {
-                    TraceInternal.TraceVerbose("[" + sessionId + "] Ok (" + process + ")");
+                    TraceInternal.TraceVerbose("[" + sessionId + "] OK (" + process + ")");
                 }
                 else
                 {
@@ -415,15 +415,15 @@ namespace WorkflowLibrary
             //      key=value, key1=value1, key2=value2
             //
             // one of the odd issues here is that the event gets raised late, so oddly
-            // the item object is beginning to reset before the data arrvies.
+            // the item object is beginning to reset before the data arrives.
             // tried to set a received flag to prevent this happening but this then
-            // causes problems as some shelled out process dont return data if their
-            // timeout has occured.
+            // causes problems as some shelled out process don't return data if their
+            // timeout has occurred.
 
 
             string receivedData = buffer;
             DictionaryEntry item;
-            received = false;   // 8/2/2015 JPG fix early trigger of received status as process spead has increased
+            received = false;   // 8/2/2015 JPG fix early trigger of received status as process speed has increased
                                 // Assumption is that data has always been received
 
             TraceInternal.TraceVerbose("[" + _sessionId + "] Reset received status");
@@ -445,7 +445,7 @@ namespace WorkflowLibrary
 
                             case DataKind.multiple:
                             {
-                                // The case where multiple key value pairs are retunred.
+                                // The case where multiple key value pairs are returned.
 
                                 TraceInternal.TraceVerbose("[" + _sessionId + "] Multiple output='" + receivedData + "'");
                                 bool passed = false;
@@ -694,7 +694,7 @@ namespace WorkflowLibrary
             TraceInternal.TraceVerbose("[" + _sessionId + "] Add local data to global data as dataID=" + dataID);
             _hierarchy = (ArrayList)parentHierarchy.Clone();         // Copy the parent hierarchy.
             _hierarchy.Insert((int)StageType.Item, dataID);          // Add the tempData reference to the end.
-            TraceInternal.TraceVerbose("[" + _sessionId + "] Add dataId to hierachy ");
+            TraceInternal.TraceVerbose("[" + _sessionId + "] Add dataId to hierarchy");
 
             for (int i = 0; i < _hierarchy.Count; i++)
             {
@@ -740,7 +740,7 @@ namespace WorkflowLibrary
 
         public object Clone()
         {
-            return this.MemberwiseClone();
+            return (this.MemberwiseClone());
         }
 
         #endregion Methods
