@@ -91,13 +91,13 @@ namespace WorkflowConsole
             Trace.AutoFlush = true;
             TraceFilter fileTraceFilter = new System.Diagnostics.EventTypeFilter(SourceLevels.Verbose);
             listener.Filter = fileTraceFilter;
-            Trace.Listeners.Clear();
-            Trace.Listeners.Add(listener);
+            System.Diagnostics.Trace.Listeners.Clear();
+            System.Diagnostics.Trace.Listeners.Add(listener);
 
             ConsoleTraceListener console = new ConsoleTraceListener();
             TraceFilter consoleTraceFilter = new System.Diagnostics.EventTypeFilter(SourceLevels.Verbose);
             console.Filter = consoleTraceFilter;
-            Trace.Listeners.Add(console);
+            System.Diagnostics.Trace.Listeners.Add(console);
 
             if (IsLinux == false)
             {
@@ -344,7 +344,7 @@ namespace WorkflowConsole
             // Redirect the output
 
             listener.Flush();
-            Trace.Listeners.Remove(listener);
+            System.Diagnostics.Trace.Listeners.Remove(listener);
             listener.Close();
             listener.Dispose();
 
@@ -354,7 +354,7 @@ namespace WorkflowConsole
             SourceLevels sourceLevels = TraceInternal.TraceLookup(traceLevels.Value.ToString());
             fileTraceFilter = new System.Diagnostics.EventTypeFilter(sourceLevels);
             listener.Filter = fileTraceFilter;
-            Trace.Listeners.Add(listener);
+            System.Diagnostics.Trace.Listeners.Add(listener);
 
             TraceInternal.TraceInformation("Use Name=" + appName.Value);
             TraceInternal.TraceInformation("Use Path=" + appPath.Value);

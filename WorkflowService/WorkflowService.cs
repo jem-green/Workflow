@@ -134,8 +134,8 @@ namespace WorkflowService
             Trace.AutoFlush = true;
             TraceFilter fileTraceFilter = new System.Diagnostics.EventTypeFilter(SourceLevels.Verbose);
             listener.Filter = fileTraceFilter;
-            Trace.Listeners.Clear();
-            Trace.Listeners.Add(listener);
+            System.Diagnostics.Trace.Listeners.Clear();
+            System.Diagnostics.Trace.Listeners.Add(listener);
 
    
             // Check if the registry has been set and overwrite the application defaults
@@ -269,7 +269,7 @@ namespace WorkflowService
             // Redirect the output
 
             listener.Flush();
-            Trace.Listeners.Remove(listener);
+            System.Diagnostics.Trace.Listeners.Remove(listener);
             listener.Close();
             listener.Dispose();
 
@@ -279,7 +279,7 @@ namespace WorkflowService
             SourceLevels sourceLevels = TraceInternal.TraceLookup(traceLevels.Value.ToString());
             fileTraceFilter = new System.Diagnostics.EventTypeFilter(sourceLevels);
             listener.Filter = fileTraceFilter;
-            Trace.Listeners.Add(listener);
+            System.Diagnostics.Trace.Listeners.Add(listener);
         
 
             TraceInternal.TraceInformation("Use Name=" + appName.Value);
