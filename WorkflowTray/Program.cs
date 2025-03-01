@@ -88,6 +88,7 @@ namespace WorkflowTray
                 pi.Start(appName,appPath);
 
                 // Make sure the application runs!
+
                 Application.Run();
             }
 

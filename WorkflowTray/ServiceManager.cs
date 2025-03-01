@@ -14,11 +14,12 @@ namespace WorkflowTray
         ServiceControllerStatus serviceStatus = ServiceControllerStatus.Running;
         bool initialised = false;
         string status = "";
+        string _serviceName;
 
         public ServiceManager(string serviceName)
         {
-            // 
-            serviceController = new ServiceController(serviceName);
+            _serviceName = serviceName;
+            
         }
 
         public string Status
@@ -32,10 +33,10 @@ namespace WorkflowTray
         public string Check()
         {
             string check = "";
-            serviceController.Refresh();
 
             try
             {
+                serviceController.Refresh();
                 if ((serviceStatus != serviceController.Status) || (initialised == false))
                 {
                     switch (serviceController.Status)
@@ -81,11 +82,12 @@ namespace WorkflowTray
         {
             try
             {
+                serviceController = new ServiceController(_serviceName);
                 serviceController.Start();
             }
-            catch
+            catch (Exception e)
             {
-                // Need to leave as is
+                TraceInternal.TraceVerbose("Exception=" + e.ToString());
             }
         }
 
@@ -95,9 +97,9 @@ namespace WorkflowTray
             {
                 serviceController.Stop();
             }
-            catch
+            catch (Exception e)
             {
-                // Need to leave as is
+                TraceInternal.TraceVerbose("Exception=" + e.ToString());
             }
         }
 
@@ -109,9 +111,9 @@ namespace WorkflowTray
                 serviceController.WaitForStatus(ServiceControllerStatus.Stopped);
                 serviceController.Start();
             }
-            catch
+            catch (Exception e)
             {
-                // Need to leave as is
+                TraceInternal.TraceVerbose("Exception=" + e.ToString());
             }
         }
 
@@ -121,9 +123,9 @@ namespace WorkflowTray
             {
                 serviceController.Pause();
             }
-            catch
+            catch (Exception e)
             {
-                // Need to leave as is
+                TraceInternal.TraceVerbose("Exception=" + e.ToString());
             }
         }
 
