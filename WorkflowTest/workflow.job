@@ -1,0 +1,484 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<workflow>
+	<jobs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///f:/SOURCE/cs.net/Jobs/JobsService/bin/Debug/Jobs.xsd">
+		<subjob id="backup" name="1"  href="backup.subjob" enabled="false">
+			<description>Backup drive C:</description>	
+			<jobdata>
+				<data>
+					<key>Drive</key>
+					<value>C:</value>
+				</data>
+				<data>
+					<key>TargetPath</key>
+					<value>\\magrathea\BACKUP</value>
+				</data>
+				<data>
+					<key>StartTime</key>
+					<value>23:00:00</value>
+				</data>
+			</jobdata>
+		</subjob>
+		<subjob id="sync" name="2" href="sync.subjob" enabled="true">
+			<description>Sync configuration data with dropbox</description>	
+			<jobdata>
+				<data>
+					<key>Drive</key>
+					<value>C:</value>
+				</data>
+				<data>
+					<key>Path</key>
+					<value>C:\Program Files\Jobs</value>
+				</data>
+			</jobdata>
+		</subjob>
+		<subjob id="backup_source" name="4" href="source.subjob" enabled="true">
+			<description>Backup source to onedrive</description>	
+			<jobdata>
+				<data>
+					<key>Drive</key>
+					<value>C:</value>
+				</data>
+				<data>
+					<key>SourcePath</key>
+					<value>D:\SOURCE\GIT</value>
+				</data>			
+				<data>
+					<key>Root</key>
+					<value>remote:</value>
+				</data>
+				<data>
+					<key>TargetPath</key>
+					<value>/Backup/genesis</value>
+				</data>
+				<data>
+					<key>Count</key>
+					<value type="number">1</value>			
+				</data>
+				<data>
+					<key>Total</key>
+					<value type="number">0</value>			
+				</data>
+			</jobdata>
+		</subjob>
+		<job id="archive_source" name="5" enabled="true">
+			<description>Backup source to USB drive</description>	
+			<jobdata>
+				<data>
+					<key>Drive</key>
+					<value>D:</value>
+				</data>
+				<data>
+					<key>SourcePath</key>
+					<value>C:\SOURCE\GIT</value>
+				</data>			
+				<data>
+					<key>TargetPath</key>
+					<value>\SOURCE</value>
+				</data>
+				<data>
+					<key>Device</key>
+					<value>USBSTOR\DISK&amp;VEN_REALSIL&amp;PROD_RTSUERLUN0&amp;REV_1.00\0000</value>
+				</data>
+			</jobdata>
+			<tasks>
+				<task id="archive_source_usb" name="0">
+					<description>checking USB drive</description>
+					<next/>
+					<previous>0</previous>
+					<items>
+						<item id="archive_source_usb_insert" name="1">
+							<application>C:\Program Files\Console\ConsoleChassis.exe</application>
+							<command>"Engines" "Engines.DeviceEngine" --id "[Device]" --timeout 3600 --interval 30</command>
+							<description>Wait for an hour for USB insert</description>
+							<error/>
+							<input/>
+							<output/>
+						</item>
+					</items>
+				</task>
+				<task id="archive_source_initial" name="1">
+					<description>backup files to USB drive</description>
+					<next>archive_source_archive</next>
+					<previous>archive_source_archive</previous>
+					<items>			
+						<item id="archive_source_initial_copy" name="2">
+							<application>robocopy.exe</application>
+							<command>"[SourcePath]" "[Drive][TargetPath]\GIT" /S /Z /COPY:DAT /V /A /NP /R:2 /W:30 /XD .git .vs .svn bin obj /XF *.log *.exe *.dll</command>
+							<description>Copy the files to the backup</description>
+							<error kind="echo"/>
+							<input/>
+							<output kind="none"/>
+							<itemdata/>
+						</item>
+					</items>
+				</task>			
+				<task id="archive_source_archive" name="2">
+					<description>Reset the archive flag</description>
+					<next>archive_source_current_date</next>
+					<previous>archive_source_current_date</previous>
+					<items>
+						<item id="archive_source_archive_set" name="1">
+							<application>cmd.exe</application>
+							<command>/c attrib -A "[SourcePath]\*.*" /S /D</command>
+							<description>Reset the archive flag to ensure that only changes are backup</description>
+							<error kind="echo"/>
+							<input/>
+							<output kind="none"/>
+						</item>
+					</items>
+				</task>	
+				<task id="archive_source_wait" name="3">
+					<description>wait for an hour to do a backup</description>
+					<next/>
+					<previous>0</previous>
+					<items>
+						<item id="archive_source_wait_time" name="1">
+							<application>C:\Program Files\Console\ConsoleChassis.exe</application>
+							<command>"Engines" "Engines.WaitEngine" --schedule "minutes" --timeout 60 --starttime "00:00:00"</command>
+							<description>Wait for 1 hour</description>
+							<error/>
+							<input/>
+							<output/>
+						</item>
+					</items>
+				</task>
+				<task id="archive_source_check" name="4">
+					<description>checking USB drive</description>
+					<next/>
+					<previous>archive_source_check</previous>
+					<items>
+						<item id="archive_source_check_usb" name="1">
+							<application>C:\Program Files\Console\ConsoleChassis.exe</application>
+							<command>"Engines" "Engines.DeviceEngine" --id "[Device]" --timeout 3600 --interval 30</command>
+							<description>Wait for an hour for USB insert</description>
+							<error/>
+							<input/>
+							<output/>
+						</item>
+					</items>
+				</task>
+				<task id="archive_source_current_date" name="5">
+					<description>get the current date</description>
+					<next/>
+					<previous>0</previous>
+					<items>
+						<item id="archive_source_current_date_get" name="1">
+							<application>cmd.exe</application>
+							<command>/c echo %date:~6,4%%date:~3,2%%date:~0,2%</command>
+							<description>Get the current date</description>
+							<error/>
+							<input/>
+							<output type="value">Date</output>
+						</item>
+					</items>
+				</task>
+				<task id="archive_source_current_time" name="6">
+					<description>get the current time</description>
+					<next/>
+					<previous>0</previous>
+					<items>
+						<item id="archive_source_current_time_get" name="1">
+							<application>cmd.exe</application>
+							<command>/c for /f "tokens=1,2,3 usebackq delims=: " %a in ('%time%') do echo %a%b</command>
+							<description>Get the current time</description>
+							<error/>
+							<input/>
+							<output type="value">Time</output>						
+						</item>
+					</items>
+
+				</task>
+				<task id="archive_source_difference" name="7">
+					<description>backup files to USB drive</description>
+					<next>archive_source_increment</next>
+					<previous>archive_source_increment</previous>
+					<items>			
+						<item id="archive_source_increment_copy" name="2">
+							<application>robocopy.exe</application>
+							<command>"[SourcePath]" "[Drive][TargetPath]\GIT" /S /Z /COPY:DAT /V /A /NP /R:2 /W:30 /XD .git .vs .svn bin obj /XF *.log *.exe *.dll</command>
+							<description>Copy the files to the backup</description>
+							<error kind="echo"/>
+							<input/>
+							<output kind="none"/>
+							<itemdata/>
+						</item>
+					</items>
+				</task>
+				<task id="archive_source_increment" name="8">
+					<description>copy files to USB drive</description>
+					<next>archive_source_wait</next>
+					<previous>archive_source_wait</previous>
+					<items>			
+						<item id="archive_source_increment_copy" name="2">
+							<application>robocopy.exe</application>
+							<command>"[SourcePath]" "[Drive][TargetPath]\[Date]\[Time]" /S /Z /COPY:DAT /V /M /NP /R:2 /W:30 /XD .git .vs .svn bin obj /XF *.log *.exe *.dll</command>
+							<description>Copy the files to the backup</description>
+							<error kind="echo"/>
+							<input/>
+							<output kind="none"/>
+							<itemdata/>
+						</item>
+					</items>
+				</task>
+			</tasks>
+		</job>
+		<subjob id="zip" name="7" href="zip.subjob" enabled="true">
+			<description>Zip log files</description>	
+			<jobdata>
+				<data>
+					<key>Drive</key>
+					<value>C:</value>
+				</data>
+				<data>
+					<key>SearchPath</key>
+					<value>d:\logs\Jobs</value>
+				</data>
+				<data>
+					<key>SearchExtension</key>
+					<value>*.log</value>
+				</data>
+				<data>
+					<key>StartTime</key>
+					<value>22:00:00</value>
+				</data>
+				<data>
+					<key>Count</key>
+					<value type="number">1</value>			
+				</data>
+				<data>
+					<key>Total</key>
+					<value type="number">1</value>			
+				</data>
+			</jobdata>
+		</subjob>
+		<job id="copy_jupiter_music" name="8" enabled="false">
+			<description>Copy music files from JUPITER</description>
+			<itemdata>
+				<data> 
+					<key>Drive</key>
+					<value>D:\</value>
+				</data>
+				<data>
+					<key>SourcePath</key>
+					<value>\\JUPITER\MUSIC</value>
+				</data>
+				<data>
+					<key>TargetPath</key>
+					<value>music</value>
+				</data>
+				<data>
+					<key>Address</key>
+					<value>JUPITER</value>
+				</data>
+			</itemdata>
+			<tasks>
+				<task id="copy_jupiter_music_wait" name="0">
+					<description>wait</description>
+					<next/>
+					<previous>0</previous>
+					<items>
+						<item id="copy_jupiter_music_wait_time" name="1">
+							<application>C:\Program Files\Console\ConsoleChassis.exe</application>
+							<command>"Engines" "Engines.WaitEngine" --schedule "hours" --timeout 1 --starttime 22:30:00</command>
+							<description>Wait every day</description>
+							<error/>
+							<input/>
+							<output kind="none"></output>
+						</item>
+					</items>		
+				</task>
+				<task id="copy_jupiter_music_check" name="1">
+					<description>ping</description>
+					<next/>
+					<previous>0</previous>
+					<items>
+						<item id="copy_jupiter_music_ping" name="1">
+							<application>C:\Program Files\Console\ConsoleChassis.exe</application>
+							<command>"Engines" "Engines.PingEngine" --address "[Address]" --number 4 --interval 300 --timeout 900"</command>
+							<description>Ping JUPITER and check we get 4 responses</description>
+							<error/>
+							<input/>
+							<output />
+						</item>
+					</items>
+				</task>
+				<task id="copy_jupiter_music_copy" name="2">
+					<description>copy files from mini</description>
+					<next>0</next>
+					<previous>0</previous>
+					<items>			
+						<item id="copy_jupiter_music_copy_temp" name="2">
+							<application>robocopy.exe</application>
+							<command>"[SourcePath]" "[Drive][TargetPath]" /S /FFT /Z /COPY:DAT /V /NP /R:2 /W:30 /XA:H /XF *.db</command>
+							<description>copy the files to the music directory</description>
+							<error/>
+							<input/>
+							<output/>
+							<itemdata/>
+						</item>
+					</items>
+				</task>
+			</tasks>
+		</job>
+		<job id="copy_jupiter_media" name="9" enabled="false">
+			<description>Copy media files from JUPITER</description>
+			<itemdata>
+				<data> 
+					<key>Drive</key>
+					<value>D:\</value>
+				</data>
+				<data>
+					<key>SourcePath</key>
+					<value>\\JUPITER\USERS\JEREMY\MEDIA\MUSIC</value>
+				</data>
+				<data>
+					<key>TargetPath</key>
+					<value>MEDIA\MUSIC</value>
+				</data>
+				<data>
+					<key>Address</key>
+					<value>JUPITER</value>
+				</data>
+			</itemdata>
+			<tasks>
+				<task id="copy_jupiter_media_wait" name="0">
+					<description>wait</description>
+					<next/>
+					<previous>0</previous>
+					<items>
+						<item id="copy_jupiter_media_wait_time" name="1">
+							<application>C:\Program Files\Console\ConsoleChassis.exe</application>
+							<command>"Engines" "Engines.WaitEngine" --schedule "hours" --timeout 1 --starttime 22:45:00</command>
+							<description>Wait every day</description>
+							<error/>
+							<input/>
+							<output kind="none"></output>
+						</item>
+					</items>		
+				</task>
+				<task id="copy_jupiter_media_check" name="1">
+					<description>ping</description>
+					<next/>
+					<previous>0</previous>
+					<items>
+						<item id="copy_jupiter_media_ping" name="1">
+							<application>C:\Program Files\Console\ConsoleChassis.exe</application>
+							<command>"Engines" "Engines.PingEngine" --address "[Address]" --number 4 --interval 300 --timeout 900"</command>
+							<description>Ping JUPITER and check we get 4 responses</description>
+							<error/>
+							<input/>
+							<output />
+						</item>
+					</items>
+				</task>
+				<task id="copy_jupiter_media_copy" name="2">
+					<description>copy files from mini</description>
+					<next>0</next>
+					<previous>0</previous>
+					<items>			
+						<item id="copy_jupiter_media_copy_temp" name="2">
+							<application>robocopy.exe</application>
+							<command>"[SourcePath]" "[Drive][TargetPath]" /S /FFT /Z /COPY:DAT /V /NP /R:2 /W:30 /XF *.db</command>
+							<description>copy the files to the music directory</description>
+							<error/>
+							<input/>
+							<output/>
+							<itemdata/>
+						</item>
+					</items>
+				</task>
+			</tasks>
+		</job>
+		<job id="copy_genesis_music" name="10" enabled="false">
+			<description>Copy music to phone</description>	
+			<jobdata>
+				<data>
+					<key>Drive</key>
+					<value>D:</value>
+				</data>
+				<data>
+					<key>SourcePath</key>
+					<value>C:\SOURCE\GIT</value>
+				</data>			
+				<data>
+					<key>TargetPath</key>
+					<value>\SOURCE</value>
+				</data>
+				<data>
+					<key>Device</key>
+					<value>USB\VID_045E&amp;PID_0A00\51000000AC6F75070000000000000000</value>
+				</data>
+			</jobdata>
+			<tasks>
+				<task id="copy_genesis_music_usb" name="0">
+					<description>checking USB drive</description>
+					<next />
+					<previous>0</previous>
+					<items>
+						<item id="copy_genesis_music_usb_insert" name="1">
+							<application>C:\Program Files\Console\ConsoleChassis.exe</application>
+							<command>"Engines" "Engines.DeviceEngine" --id "[Device]" --timeout 3600 --interval 30</command>
+							<description>Wait for an hour for USB insert</description>
+							<error/>
+							<input/>
+							<output/>
+						</item>
+					</items>
+				</task>
+				<task id="copy_genesis_music_transfer" name="0">
+					<description>transfer music to phone</description>
+					<next>0</next>
+					<previous>0</previous>
+					<items>
+						<item id="copy_genesis_music_transfer_WPD" name="1">
+							<application>C:\Program Files\Console\ConsoleChassis.exe</application>
+							<command>"Engines" "Engines.WPDEngine" --mode "transfer" --source "D:\MUSIC" --target "SD card\MUSIC" --name "Jeremy Green’s 950XL" --attrib "-H"</command>
+							<description>Tansfer music to the SD card</description>
+							<error/>
+							<input/>
+							<output/>
+						</item>
+					</items>
+				</task>
+			</tasks>
+		</job>
+		<subjob id="netio" name="11"  href="netio.subjob" enabled="false">
+			<description>Backup drive C:</description>	
+			<jobdata>
+				<data>
+					<key>Target</key>
+					<value>192.168.1.5</value>
+				</data>
+				<data>
+					<key>StartTime</key>
+					<value>00:00:00</value>
+				</data>
+				<data>
+					<key>Threshold</key>
+					<value>1000</value>
+				</data>
+			</jobdata>
+		</subjob>
+		<subjob id="clean" name="12" href="clean.subjob" enabled="false">
+			<description>clean source files</description>	
+			<jobdata>
+				<data>
+					<key>SearchPath</key>
+					<value>d:\source</value>
+				</data>
+				<data>
+					<key>StartTime</key>
+					<value>22:00:00</value>
+				</data>
+				<data>
+					<key>Count</key>
+					<value type="number">1</value>			
+				</data>
+				<data>
+					<key>Total</key>
+					<value type="number">1</value>			
+				</data>
+			</jobdata>
+		</subjob>
+	</jobs>
+</workflow>

@@ -7,7 +7,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="TracerLibrary">
-      <HintPath>..\ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.dll</HintPath>
+      <HintPath>..\ThirdParty\Tracer\net6.0\TracerLibrary.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

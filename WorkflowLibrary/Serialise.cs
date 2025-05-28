@@ -18,8 +18,14 @@ namespace WorkflowLibrary
         #endregion
         #region Constructors
 
-        public Serialise()
+        public Serialise() : this("","")
         {
+        }
+
+        public Serialise(string filename, string path)
+        {
+            _filename = filename;
+            _path = path;   
         }
 
         #endregion
@@ -50,12 +56,12 @@ namespace WorkflowLibrary
         #endregion
         #region Methods
 
-        public int SerializeToXML(Collection<Job> jobs)
+        public int ToXML(Collection<Job> jobs)
         {
-            return (SerializeToXML(jobs, _filename, _path));
+            return (ToXML(jobs, _filename, _path));
         }
 
-        public int SerializeToXML(Collection<Job> jobs, string filename, string path)
+        public int ToXML(Collection<Job> jobs, string filename, string path)
         {
 
             XmlWriterSettings tstxmlsettings = new XmlWriterSettings
@@ -170,30 +176,40 @@ namespace WorkflowLibrary
         public Collection<Object> DeserialiseProcess()
         {
             int level = 1;
-            return (DeserialiseFromXML(StageType.Process, this._filename, this._path, level));
+            return (FromXML(StageType.Process, this._filename, this._path, level));
         }
 
         public Collection<Object> DeserialiseProcess(string filename, string path, int level)
         {
-            return(DeserialiseFromXML(StageType.Process,filename,path,level));
+            return(FromXML(StageType.Process,filename,path,level));
+        }
+
+        public Collection<Object> DeserialiseJob()
+        {
+            return (FromXML(StageType.Job, _filename, _path, 0));
         }
 
         public Collection<Object> DeserialiseJob(string filename, string path, int level)
         {
-            return (DeserialiseFromXML(StageType.Job, filename, path, level));
+            return (FromXML(StageType.Job, filename, path, level));
         }
 
         public Collection<Object> DeserialiseTask(string filename, string path, int level)
         {
-            return (DeserialiseFromXML(StageType.Task, filename, path, level));
+            return (FromXML(StageType.Task, filename, path, level));
         }
 
         public Collection<Object> DeserialiseItem(string filename, string path, int level)
         {
-            return (DeserialiseFromXML(StageType.Item, filename, path, level));
+            return (FromXML(StageType.Item, filename, path, level));
         }
 
-        public Collection<Object> DeserialiseFromXML(StageType dataType, string filename, string path, int level)
+        public Collection<Object> FromXML(StageType dataType)
+        {
+            return (FromXML(dataType, _filename, _path, 0));
+        }
+
+        public Collection<Object> FromXML(StageType dataType, string filename, string path, int level)
         {
             // The deserialise needs to accept a type definition and return an appropriate
             // collection containing these object and sub-objects. This will enable a check on 
@@ -224,7 +240,7 @@ namespace WorkflowLibrary
             //        }
             //}
 
-            Collection<Object> container = new Collection<Object>();
+            Collection<Object> workflow = null;
             try
             {
                 // Point to the file
@@ -302,7 +318,6 @@ namespace WorkflowLibrary
                                     // stuff
                                     element = xmlReader.LocalName.ToLower();
 
-
                                     if (!xmlReader.IsEmptyElement)
                                     {
                                         TraceInternal.TraceVerbose(Level(level) + "<" + element + ">");
@@ -314,8 +329,17 @@ namespace WorkflowLibrary
                                     }
                                     switch (element)
                                     {
-                                        case "version":
+                                        case "workflow":
+                                            #region Workflow
+                                            stack.Push(current);
+                                            current = element;
+                                            workflow = new Collection<Object>();
                                             break;
+                                        #endregion
+                                        case "version":
+                                            #region Version
+                                            break;
+                                        #endregion
                                         case "process":
                                             #region Process
                                             stack.Push(current);
@@ -459,7 +483,7 @@ namespace WorkflowLibrary
                                         case "job":
                                             #region Job
                                             stack.Push(current);
-                                            current = "job";
+                                            current = element;
                                             stage = StageType.Job;
                                             id = "";
                                             name = "";
@@ -525,7 +549,7 @@ namespace WorkflowLibrary
                                         case "subjob":
                                             #region SubJob
                                             stack.Push(current);
-                                            current = "subjob";
+                                            current = element;
                                             stage = StageType.Job;
                                             id = "";
                                             name = "";
@@ -597,7 +621,7 @@ namespace WorkflowLibrary
                                         case "event":
                                             #region Event
                                             stack.Push(current);
-                                            current = "event";
+                                            current = element;
                                             stage = StageType.Job;
                                             id = "";
                                             name = "";
@@ -664,7 +688,7 @@ namespace WorkflowLibrary
                                         case "task":
                                             #region Task
                                             stack.Push(current);
-                                            current = "task";
+                                            current = element;
                                             stage = StageType.Task;
                                             id = "";
                                             name = "";
@@ -729,7 +753,7 @@ namespace WorkflowLibrary
                                         case "subtask":
                                             #region SubTask
                                             stack.Push(current);
-                                            current = "subtask";
+                                            current = element;
                                             stage = StageType.Task;
                                             id = "";
                                             name = "";
@@ -800,7 +824,7 @@ namespace WorkflowLibrary
                                         case "item":
                                             #region Item
                                             stack.Push(current);
-                                            current = "item";
+                                            current = element;
                                             stage = StageType.Item;
                                             id = "";
                                             name = "";
@@ -946,7 +970,7 @@ namespace WorkflowLibrary
                                         case "decision":
                                             #region Decision
                                             stack.Push(current);
-                                            current = "decision";
+                                            current = element;
                                             stage = StageType.Job;
                                             id = "";
                                             name = "";
@@ -983,12 +1007,12 @@ namespace WorkflowLibrary
                                                 decision.Enabled = decisionEnabled;
                                             }
                                             break;
-                                        #endregion
+                                            #endregion
                                         case "connector":
                                             #region Connector
                                             {
                                                 stack.Push(current);
-                                                current = "connector";
+                                                current = element;
                                                 stage = StageType.Job;
                                                 id = "";
                                                 name = "";
@@ -1352,12 +1376,6 @@ namespace WorkflowLibrary
                                             }
                                             break;
                                         #endregion
-                                        default:
-                                            {
-                                                stack.Push(current);
-                                                current = element;
-                                                break;
-                                            }
                                     }
                                     break;
 
@@ -1376,7 +1394,7 @@ namespace WorkflowLibrary
                                                 current = stack.Pop();
                                                 if (process.Enabled == true)    // only add enabled jobs at the moments
                                                 {
-                                                    container.Add(process);
+                                                    workflow.Add(process);
                                                     TraceInternal.TraceVerbose(Level(level) + "Add Process() '" + process.ID + "'(" + process.Name + ")");
                                                 }
                                                 else
@@ -1390,10 +1408,15 @@ namespace WorkflowLibrary
                                             #region subprocess
                                             {
                                                 current = stack.Pop();
-                                                if (process.Enabled == true)    // only add enabled jobs at the moments
+                                                if (process.Enabled == true)    // only add to enabled processes at the moments
                                                 {
-                                                    Serialise s = new Serialise();
-                                                    Collection<object> subprocess = s.DeserialiseJob(href, path, level+1);
+                                                    if (workflow == null)
+                                                    {
+                                                        workflow = new Collection<Object>();
+                                                    }
+
+                                                    Serialise serialise = new Serialise();
+                                                    Collection<object> subprocess = serialise.DeserialiseJob(href, path, level+1);
                                                     foreach (object o in subprocess)
                                                     {
                                                         if (o.GetType() == typeof(Job))
@@ -1402,7 +1425,7 @@ namespace WorkflowLibrary
                                                             process.Add(j);
                                                         }
                                                     }
-                                                    container.Add(process);
+                                                    workflow.Add(process);
                                                     TraceInternal.TraceVerbose(Level(level) + "Add SubProcess() '" + process.ID + "'(" + process.Name + ")");
                                                 }
                                                 else
@@ -1429,7 +1452,7 @@ namespace WorkflowLibrary
                                                 }
                                                 else
                                                 {
-                                                    container.Add(job);
+                                                    workflow.Add(job);
                                                 }
                                                 TraceInternal.TraceVerbose(Level(level) + "Add Job() '" + job.ID + "'(" + job.Name + ")");
                                             }
@@ -1442,8 +1465,12 @@ namespace WorkflowLibrary
                                         case "subjob":
                                             #region SubJob
                                             current = stack.Pop();
-                                            if (job.Enabled == true)    // only add enabled jobs at the moments
+                                            if (job.Enabled == true)    // only add to enabled jobs at the moments
                                             {
+                                                if (workflow == null)
+                                                {
+                                                    workflow = new Collection<Object>();
+                                                }
                                                 Serialise s = new Serialise();
                                                 Collection<object> subjob = s.DeserialiseTask(href, path, level+1);
                                                 foreach (object o in subjob)
@@ -1462,11 +1489,11 @@ namespace WorkflowLibrary
 
                                                 if (current == "process")
                                                 {
-                                                    container.Add(job);
+                                                    workflow.Add(job);
                                                 }
                                                 else
                                                 {
-                                                    container.Add(job);
+                                                    workflow.Add(job);
                                                 }
 
                                                 TraceInternal.TraceVerbose(Level(level) + "Add Subjob() '" + job.ID + "'(" + job.Name + ")");
@@ -1498,7 +1525,7 @@ namespace WorkflowLibrary
                                                 }
                                                 else
                                                 {
-                                                    container.Add(task);
+                                                    workflow.Add(task);
                                                 }
                                                 TraceInternal.TraceVerbose(Level(level) + "Add Task() '" + task.ID + "'(" + task.Name + ")");
                                             }
@@ -1511,8 +1538,12 @@ namespace WorkflowLibrary
                                         case "subtask":
                                             #region SubTask
                                             current = stack.Pop();
-                                            if (task.Enabled == true)    // only add enabled jobs at the moments
+                                            if (task.Enabled == true)    // only add to enabled task at the moments
                                             {
+                                                if (workflow == null)
+                                                {
+                                                    workflow = new Collection<Object>();
+                                                }
                                                 Serialise s = new Serialise();
                                                 Collection<object> subtask = s.DeserialiseItem(href, path, level+1);
                                                 foreach (object o in subtask)
@@ -1535,7 +1566,7 @@ namespace WorkflowLibrary
                                                 }
                                                 else
                                                 {
-                                                    container.Add(task);
+                                                    workflow.Add(task);
                                                 }
 
                                                 TraceInternal.TraceVerbose(Level(level) + "Add Subtask() '" + task.ID + "'(" + task.Name + ")");
@@ -1564,7 +1595,7 @@ namespace WorkflowLibrary
                                                 }
                                                 else
                                                 {
-                                                    container.Add(@event);
+                                                    workflow.Add(@event);
                                                 }
                                                 TraceInternal.TraceVerbose(Level(level) + "Add Event() '" + @event.ID + "'(" + @event.Name + ")");
                                             }
@@ -1591,7 +1622,7 @@ namespace WorkflowLibrary
                                                 }
                                                 else
                                                 {
-                                                    container.Add(link);
+                                                    workflow.Add(link);
                                                 }
                                                 TraceInternal.TraceVerbose(Level(level) + "Add Link() '" + link.ID + "'(" + link.Name + ")");
                                             }
@@ -1616,7 +1647,7 @@ namespace WorkflowLibrary
                                             }
                                             else
                                             {
-                                                container.Add(item);
+                                                workflow.Add(item);
                                             }
                                             break;
                                         #endregion
@@ -1637,7 +1668,7 @@ namespace WorkflowLibrary
                                                 }
                                                 else
                                                 {
-                                                    container.Add(decision);
+                                                    workflow.Add(decision);
                                                 }
                                                 TraceInternal.TraceVerbose(Level(level) + "Add Decision() '" + decision.ID + "'(" + decision.Name + ")");
                                             }
@@ -1658,7 +1689,7 @@ namespace WorkflowLibrary
                                                 }
                                                 else
                                                 {
-                                                    container.Add(connector);
+                                                    workflow.Add(connector);
                                                 }
                                                 TraceInternal.TraceVerbose(Level(level) + "Add Connector() '" + connector.ID + "'(" + connector.Name + ")");
                                             }
@@ -1686,7 +1717,7 @@ namespace WorkflowLibrary
                                                 case "":
                                                     {
                                                         KeyValuePair<string, object> kvp = new KeyValuePair<string, object>(key,value);
-                                                        container.Add(kvp);
+                                                        workflow.Add(kvp);
                                                         break;
                                                     }
                                                 case "process":
@@ -1778,10 +1809,11 @@ namespace WorkflowLibrary
                                         case "pipes":
                                             break;
                                         case "pipe":
+                                            #region Pipe
                                             current = stack.Pop();
                                             if (pipe.Enabled == true)    // only add enabled jobs at the moments
                                             {
-                                                container.Add(pipe);
+                                                workflow.Add(pipe);
                                                 TraceInternal.TraceVerbose(Level(level) + "Add Pipe() '" + pipe.ID + "'(" + pipe.Name + ")");
                                             }
                                             else
@@ -1789,6 +1821,8 @@ namespace WorkflowLibrary
                                                 TraceInternal.TraceVerbose(Level(level) + "Disabled Pipe() '" + pipe.ID + "'(" + pipe.Name + ")");
                                             }
                                             break;
+                                            #endregion
+
                                     }
                                     TraceInternal.TraceVerbose(Level(level) + "</" + element + ">");
                                     break;
@@ -2036,7 +2070,7 @@ namespace WorkflowLibrary
                 TraceInternal.TraceVerbose("Other Error " + e.Message);
             }
             
-            return (container);
+            return (workflow);
         }
 
         public static Collection<object> LinkObjects(Collection<object> container)

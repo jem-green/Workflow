@@ -59,29 +59,29 @@ namespace WorkflowConsole
             string jobId = "";
 
             Parameter<string> appPath = new Parameter<string>("appPath","");
-            Parameter<string> appName = new Parameter<string>("appName","process.xml");
+            Parameter<string> appName = new Parameter<string>("appName","process.cfg");
             appPath.Value = System.Reflection.Assembly.GetExecutingAssembly().Location;
 
             int pos = appPath.Value.ToString().LastIndexOf(Path.DirectorySeparatorChar);
             if (pos > 0)
             {
                 appPath.Value = appPath.Value.ToString().Substring(0, pos);
-                appPath.Source = Parameter<string>.SourceType.App;
+                appPath.Source = IParameter.SourceType.App;
             }
 
             Parameter<string> logPath = new Parameter<string>("logPath","");
-            Parameter<string> logName = new Parameter<string>("lagName","workflowconsole");
+            Parameter<string> logName = new Parameter<string>("logName","workflowconsole");
             logPath.Value = System.Reflection.Assembly.GetExecutingAssembly().Location;
             pos = logPath.Value.ToString().LastIndexOf(Path.DirectorySeparatorChar);
             if (pos > 0)
             {
                 logPath.Value = logPath.Value.ToString().Substring(0, pos);
-                logPath.Source = Parameter<string>.SourceType.App;
+                logPath.Source = IParameter.SourceType.App;
             }
 
-            Parameter<SourceLevels> traceLevels = new Parameter<SourceLevels>("traceLavels");
+            Parameter<SourceLevels> traceLevels = new Parameter<SourceLevels>("traceLavels",SourceLevels.Verbose);
             traceLevels.Value = TraceInternal.TraceLookup("VERBOSE");
-            traceLevels.Source = Parameter<SourceLevels>.SourceType.App;
+            traceLevels.Source = IParameter.SourceType.App;
 
             // Configure tracer options
 
@@ -123,7 +123,7 @@ namespace WorkflowConsole
                     if (key.GetValue("logpath", "").ToString().Length > 0)
                     {
                         logPath.Value = (string)key.GetValue("logpath", logPath);
-                        logPath.Source = Parameter<string>.SourceType.Registry;
+                        logPath.Source = IParameter.SourceType.Registry;
                         TraceInternal.TraceVerbose("Use registry value; logPath=" + logPath);
                     }
                 }
@@ -143,7 +143,7 @@ namespace WorkflowConsole
                     if (key.GetValue("logname", "").ToString().Length > 0)
                     {
                         logName.Value = (string)key.GetValue("logname", logName);
-                        logName.Source = Parameter<string>.SourceType.Registry;
+                        logName.Source = IParameter.SourceType.Registry;
                         TraceInternal.TraceVerbose("Use registry value; LogName=" + logName);
                     }
                 }
@@ -163,7 +163,7 @@ namespace WorkflowConsole
                     if (key.GetValue("name", "").ToString().Length > 0)
                     {
                         appName.Value = (string)key.GetValue("name", appName);
-                        appName.Source = Parameter<string>.SourceType.Registry;
+                        appName.Source = IParameter.SourceType.Registry;
                         TraceInternal.TraceVerbose("Use registry value; Name=" + appName);
                     }
                 }
@@ -183,7 +183,7 @@ namespace WorkflowConsole
                     if (key.GetValue("path", "").ToString().Length > 0)
                     {
                         appPath.Value = (string)key.GetValue("path", appPath);
-                        appPath.Source = Parameter<string>.SourceType.Registry;
+                        appPath.Source = IParameter.SourceType.Registry;
                         TraceInternal.TraceVerbose("Use registry value; Path=" + appPath);
                     }
                 }
@@ -206,7 +206,7 @@ namespace WorkflowConsole
                         traceName = traceName.TrimStart('"');
                         traceName = traceName.TrimEnd('"');
                         traceLevels.Value = TraceInternal.TraceLookup(traceName);
-                        traceLevels.Source = Parameter<SourceLevels>.SourceType.Registry;
+                        traceLevels.Source = IParameter.SourceType.Registry;
                         TraceInternal.TraceVerbose("Use command value Debug=" + traceLevels);
                     }
                 }
@@ -240,17 +240,16 @@ namespace WorkflowConsole
                 if (pos > 0)
                 {
                     appPath.Value = filenamePath.Substring(0, pos);
-                    appPath.Source = Parameter<string>.SourceType.Command;
+                    appPath.Source = IParameter.SourceType.Command;
                     appName.Value = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
                     appName.Value = appName.Value.ToString() + ".job";
-                    appName.Source = Parameter<string>.SourceType.Command;
-
+                    appName.Source = IParameter.SourceType.Command;
                 }
                 else
                 {
                     appName.Value = filenamePath;
                     appName.Value = appName.Value.ToString() + ".job";
-                    appName.Source = Parameter<string>.SourceType.Command;
+                    appName.Source = IParameter.SourceType.Command;
                 }
                 TraceInternal.TraceVerbose("Use command value Path=" + appPath);
                 TraceInternal.TraceVerbose("Use command value Name=" + appName);
@@ -273,7 +272,7 @@ namespace WorkflowConsole
                                 traceName = traceName.TrimStart('"');
                                 traceName = traceName.TrimEnd('"');
                                 traceLevels.Value = TraceInternal.TraceLookup(traceName);
-                                traceLevels.Source = Parameter<SourceLevels>.SourceType.Command;
+                                traceLevels.Source = IParameter.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value Debug=" + traceLevels);
                                 break;
                             }
@@ -283,7 +282,7 @@ namespace WorkflowConsole
                                 appName.Value = args[item + 1];
                                 appName.Value = appName.Value.ToString().TrimStart('"');
                                 appName.Value = appName.Value.ToString().TrimEnd('"');
-                                appName.Source = Parameter<string>.SourceType.Command;
+                                appName.Source = IParameter.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value Name=" + appName);
                                 break;
                             }
@@ -293,7 +292,7 @@ namespace WorkflowConsole
                                 appPath.Value = args[item + 1];
                                 appPath.Value = appPath.Value.ToString().TrimStart('"');
                                 appPath.Value = appPath.Value.ToString().TrimEnd('"');
-                                appPath.Source = Parameter<string>.SourceType.Command;
+                                appPath.Source = IParameter.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value Path=" + appPath);
                                 break;
                             }
@@ -303,7 +302,7 @@ namespace WorkflowConsole
                                 logName.Value = args[item + 1];
                                 logName.Value = logName.Value.ToString().TrimStart('"');
                                 logName.Value = logName.Value.ToString().TrimEnd('"');
-                                logName.Source = Parameter<string>.SourceType.Command;
+                                logName.Source = IParameter.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value logName=" + logName);
                                 break;
                             }
@@ -313,7 +312,7 @@ namespace WorkflowConsole
                                 logPath.Value = args[item + 1];
                                 logPath.Value = logPath.Value.ToString().TrimStart('"');
                                 logPath.Value = logPath.Value.ToString().TrimEnd('"');
-                                logPath.Source = Parameter<string>.SourceType.Command;
+                                logPath.Source = IParameter.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value logPath=" + logPath);
                                 break;
                             }
@@ -331,11 +330,11 @@ namespace WorkflowConsole
 
                 // Adjust the log location if it has been overridden in the command line
 
-                if (logPath.Source == Parameter<string>.SourceType.Command)
+                if (logPath.Source == IParameter.SourceType.Command)
                 {
                     logFilenamePath = logPath.Value.ToString() + Path.DirectorySeparatorChar + logName.Value.ToString() + ".log";
                 }
-                if (logName.Source == Parameter<string>.SourceType.Command)
+                if (logName.Source == IParameter.SourceType.Command)
                 {
                     logFilenamePath = logPath.Value.ToString() + Path.DirectorySeparatorChar + logName.Value.ToString() + ".log";
                 }
@@ -360,7 +359,6 @@ namespace WorkflowConsole
             TraceInternal.TraceInformation("Use Path=" + appPath.Value);
             TraceInternal.TraceInformation("Use Log Name=" + logName.Value);
             TraceInternal.TraceInformation("Use Log Path=" + logPath.Value);
-
 
             // read in the XML config file and process the workflow
 
@@ -423,18 +421,28 @@ namespace WorkflowConsole
                     }
                     else
                     {
-                        throw new NotImplementedException();
+                        TraceInternal.TraceError("Cannot start item " + item.GetType());
                     }
                 }
+
+                // Need to provide an interface to review what is happening to the workflow.tasks.items
+
+                config = new WorkflowLibrary.Server();
+                config.MessageReceived += new Server.MessageReceivedHandler(MessageReceived);
+                config.PipeName = "\\\\.\\pipe\\workflow";
+                config.Start();
+
+                ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+
+                manualResetEvent.WaitOne();
+
             }
-            // Need to provide an interface to review what is happening to the workflow.tasks.items
+            else
+            {
+                TraceInternal.TraceError("No data to process");
+            }
 
-            config = new WorkflowLibrary.Server();
-            config.MessageReceived += new Server.MessageReceivedHandler(MessageReceived);
-            config.PipeName = "\\\\.\\pipe\\workflow";
-            config.Start();
-
-            Debug.WriteLine("Out Main()");
+            Debug.WriteLine("Exit Main()");
         }
 
         #endregion
@@ -498,7 +506,6 @@ namespace WorkflowConsole
                         TraceInternal.TraceInformation("CTRL+C received:");
                         break;
                     }
-
                 case CtrlTypes.CTRL_BREAK_EVENT:
                     {
                         isClosing = true;

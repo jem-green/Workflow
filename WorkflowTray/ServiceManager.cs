@@ -19,7 +19,7 @@ namespace WorkflowTray
         public ServiceManager(string serviceName)
         {
             _serviceName = serviceName;
-            
+            serviceController = new ServiceController(_serviceName);
         }
 
         public string Status

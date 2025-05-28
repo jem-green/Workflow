@@ -12,21 +12,15 @@ namespace WorkflowLibrary
 
         #endregion
         #region Constructor
-        public Parameter(string name) : base(name)
-        {
-        }
-
         public Parameter(string name, T value) : base(name, value)
         {
         }
-
-        public Parameter(string name, T value, SourceType source) : base(name, value, source)
+        public Parameter(string name, T value, IParameter.SourceType source) : base(name, value, source)
         {
         }
 
         #endregion
         #region Parameters
-
         public new T Value
         {
             set

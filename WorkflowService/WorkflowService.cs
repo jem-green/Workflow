@@ -109,7 +109,7 @@ namespace WorkflowService
             if (pos > 0)
             {
                 appPath.Value = appPath.Value.ToString().Substring(0, pos);
-                appPath.Source = Parameter<string>.SourceType.App;
+                appPath.Source = IParameter.SourceType.App;
             }
 
             Parameter<string> logPath = new Parameter<string>("logName", "");
@@ -119,12 +119,12 @@ namespace WorkflowService
             if (pos > 0)
             {
                 logPath.Value = logPath.Value.ToString().Substring(0, pos);
-                logPath.Source = Parameter<string>.SourceType.App;
+                logPath.Source = IParameter.SourceType.App;
             }
 
-            Parameter<SourceLevels> traceLevels = new Parameter<SourceLevels>("traceLevels");
+            Parameter<SourceLevels> traceLevels = new Parameter<SourceLevels>("traceLevels", SourceLevels.Verbose);
             traceLevels.Value = TraceInternal.TraceLookup("VERBOSE");
-            traceLevels.Source = Parameter<SourceLevels>.SourceType.App;
+            traceLevels.Source = IParameter.SourceType.App;
 
             // Configure tracer options
 
@@ -159,7 +159,7 @@ namespace WorkflowService
                 if (key.GetValue("logpath", "").ToString().Length > 0)
                 {
                     logPath.Value = (string)key.GetValue("logpath", logPath);
-                    logPath.Source = Parameter<string>.SourceType.Registry;
+                    logPath.Source = IParameter.SourceType.Registry;
                     TraceInternal.TraceVerbose("Use registry value; logPath=" + logPath);
                 }
             }
@@ -179,7 +179,7 @@ namespace WorkflowService
                 if (key.GetValue("logname", "").ToString().Length > 0)
                 {
                     logName.Value = (string)key.GetValue("logname", logName);
-                    logName.Source = Parameter<string>.SourceType.Registry;
+                    logName.Source = IParameter.SourceType.Registry;
                     TraceInternal.TraceVerbose("Use registry value; LogName=" + logName);
                 }
             }
@@ -199,7 +199,7 @@ namespace WorkflowService
                 if (key.GetValue("name", "").ToString().Length > 0)
                 {
                     appName.Value = (string)key.GetValue("name", appName);
-                    appName.Source = Parameter<string>.SourceType.Registry;
+                    appName.Source = IParameter.SourceType.Registry;
                     TraceInternal.TraceVerbose("Use registry value; Name=" + appName);
                 }
             }
@@ -219,7 +219,7 @@ namespace WorkflowService
                 if (key.GetValue("path", "").ToString().Length > 0)
                 {
                     appPath.Value = (string)key.GetValue("path", appPath);
-                    appPath.Source = Parameter<string>.SourceType.Registry;
+                    appPath.Source = IParameter.SourceType.Registry;
                     TraceInternal.TraceVerbose("Use registry value; Path=" + appPath);
                 }
             }
@@ -242,7 +242,7 @@ namespace WorkflowService
                     traceName = traceName.TrimStart('"');
                     traceName = traceName.TrimEnd('"');
                     traceLevels.Value = TraceInternal.TraceLookup(traceName);
-                    traceLevels.Source = Parameter<SourceLevels>.SourceType.Registry;
+                    traceLevels.Source = IParameter.SourceType.Registry;
                     TraceInternal.TraceVerbose("Use command value Debug=" + traceLevels);
                 }
             }
@@ -257,11 +257,11 @@ namespace WorkflowService
 
             // Adjust the log location if it has been overridden in the registry
 
-            if (logPath.Source == Parameter<string>.SourceType.Registry)
+            if (logPath.Source == IParameter.SourceType.Registry)
             {
                 logFilenamePath = logPath.Value.ToString() + Path.DirectorySeparatorChar + logName.Value.ToString() + ".log";
             }
-            if (logName.Source == Parameter<string>.SourceType.Registry)
+            if (logName.Source == IParameter.SourceType.Registry)
             {
                 logFilenamePath = logPath.Value.ToString() + Path.DirectorySeparatorChar + logName.Value.ToString() + ".log";
             }
@@ -279,15 +279,14 @@ namespace WorkflowService
             SourceLevels sourceLevels = TraceInternal.TraceLookup(traceLevels.Value.ToString());
             fileTraceFilter = new System.Diagnostics.EventTypeFilter(sourceLevels);
             listener.Filter = fileTraceFilter;
-            System.Diagnostics.Trace.Listeners.Add(listener);
+            Trace.Listeners.Add(listener);
         
-
             TraceInternal.TraceInformation("Use Name=" + appName.Value);
             TraceInternal.TraceInformation("Use Path=" + appPath.Value);
             TraceInternal.TraceInformation("Use Log Name=" + logName.Value);
             TraceInternal.TraceInformation("Use Log Path=" + logPath.Value);
 
-            // read in the xml config file and process the workflow
+            // read in the XML config file and process the workflow
 
             Serialise serialise = new Serialise();
             if (appPath.Value.ToString().Length > 0)
@@ -314,28 +313,28 @@ namespace WorkflowService
                 // Launch the job threads
 
                 foreach (object item in processData)
-	            {
-	                if (item.GetType() == typeof(WorkflowLibrary.Process))
-	                {
-	                    WorkflowLibrary.Process p = (WorkflowLibrary.Process)item;
-	                    p.Update();
-	                    Thread processThread = new Thread(new ThreadStart(p.Start));
-	                    processThread.Start();
-	                }
-                else if (item.GetType() == typeof(WorkflowLibrary.Job))
+                {
+                    if (item.GetType() == typeof(WorkflowLibrary.Process))
+                    {
+                        WorkflowLibrary.Process p = (WorkflowLibrary.Process)item;
+                        p.Update();
+                        Thread processThread = new Thread(new ThreadStart(p.Start));
+                        processThread.Start();
+                    }
+                    else if (item.GetType() == typeof(WorkflowLibrary.Job))
                     {
                         Job j = (Job)item;
-	                    if ((jobId.Length == 0) || (j.ID == jobId))
-	                    {
-	                        //j.Update();
-	                        Thread jobThread = new Thread(new ThreadStart(j.Start));
-	                        TraceInternal.TraceInformation("Start job " + j.ID);
-	                        jobThread.Start();
-	                    }
-	                    else
-	                    {
-	                        TraceInternal.TraceVerbose("Not starting job " + j.ID);
-	                    }
+                        if ((jobId.Length == 0) || (j.ID == jobId))
+                        {
+                            //j.Update();
+                            Thread jobThread = new Thread(new ThreadStart(j.Start));
+                            TraceInternal.TraceInformation("Start job " + j.ID);
+                            jobThread.Start();
+                        }
+                        else
+                        {
+                            TraceInternal.TraceVerbose("Not starting job " + j.ID);
+                        }
                     }
                     else if (item.GetType() == typeof(WorkflowLibrary.Event))
                     {
@@ -344,6 +343,10 @@ namespace WorkflowService
                         Thread eventThread = new Thread(new ThreadStart(e.Start));
                         TraceInternal.TraceInformation("Start event " + e.ID);
                         eventThread.Start();
+                    }
+                    else
+                    {
+                        TraceInternal.TraceError("Cannot start item " + item.GetType());
                     }
                 }
             }

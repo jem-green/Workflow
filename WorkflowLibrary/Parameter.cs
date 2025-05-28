@@ -6,45 +6,33 @@ using System.Text;
 
 namespace WorkflowLibrary
 {
-    //public enum SourceType : int
-    //{
-    //    None = 0,
-    //    Command = 1,
-    //    Registry = 2,
-    //    App = 3
-    //}
-
+    /// <summary>
+    /// Storage class for a parameter
+    /// </summary>
     public class Parameter : IParameter, IEquatable<Parameter>
     {
+
         #region Fields
 
         internal string _name = String.Empty;
         internal object _value = null;
-        internal SourceType _source = SourceType.None;
-
-        public enum SourceType : int
-        {
-            None = 0,
-            Command = 1,
-            Registry = 2,
-            App = 3
-        }
+        internal IParameter.SourceType _source = IParameter.SourceType.None;
 
         #endregion
         #region Constructor
-        public Parameter(string name)
-        {
-            _value = null;
-            _name = name;
-        }
+        //public Parameter(string name)
+        //{
+        //    _value = null;
+        //    _name = name;
+        //}
 
         public Parameter(string name, object value)
         {
             _value = value;
-            _source = SourceType.App;
+            _source = IParameter.SourceType.App;
             _name = name;
         }
-        public Parameter(string name, object value, SourceType source)
+        public Parameter(string name, object value, IParameter.SourceType source)
         {
             _value = value;
             _source = source;
@@ -77,7 +65,7 @@ namespace WorkflowLibrary
             }
         }
 
-        public SourceType Source
+        public IParameter.SourceType Source
         {
             set
             {
@@ -97,7 +85,7 @@ namespace WorkflowLibrary
             else return Equals(objAsPart);
         }
 
-        public bool Equals(Parameter other)
+        public bool Equals(Parameter? other)
         {
             return (other != null && other.Name == this.Name);
         }

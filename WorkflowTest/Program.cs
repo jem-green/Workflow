@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using WorkflowLibrary;
 
@@ -8,9 +10,20 @@ namespace WorkflowTest
     {
         static void Main(string[] args)
         {
+            Read();
             //Sequence();
-            Synchronization();
+            //Synchronization();
         }
+
+        public static void Read()
+        {
+            Collection<object> c = new Collection<object>();
+            Serialise s = new Serialise("workflow.job",".");
+            c = s.FromXML(State.StageType.Job);
+
+        }
+
+
 
         public static void Sequence()
         {

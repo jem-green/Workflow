@@ -9,4 +9,9 @@
   <ItemGroup>
     <ProjectReference Include="..\WorkflowLibrary\WorkflowLibrary.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="workflow.job">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

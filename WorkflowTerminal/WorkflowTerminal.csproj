@@ -1,26 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.1" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\JobsLibrary\JobsLibrary.csproj" />
+    <ProjectReference Include="..\WorkflowLibrary\WorkflowLibrary.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="TracerLibrary">
-      <HintPath>..\ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.dll</HintPath>
+      <HintPath>..\ThirdParty\Tracer\net6.0\TracerLibrary.dll</HintPath>
     </Reference>
   </ItemGroup>
-
 </Project>

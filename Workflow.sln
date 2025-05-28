@@ -16,20 +16,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkflowApplication", "Work
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tracer", "Tracer", "{F1074CCB-5B00-4167-9371-1833672A8C03}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "netcoreapp3.1", "netcoreapp3.1", "{3A21CD5E-84E4-4EC7-92A1-ACDF440F7C40}"
-	ProjectSection(SolutionItems) = preProject
-		ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.deps.json = ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.deps.json
-		ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.dll = ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.dll
-		ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.pdb = ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.pdb
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "net452", "net452", "{6C20FD6C-B83B-4345-ABA1-9544E850999B}"
-	ProjectSection(SolutionItems) = preProject
-		ThirdParty\Tracer\net452\TraceLibrary.pdb = ThirdParty\Tracer\net452\TraceLibrary.pdb
-		ThirdParty\Tracer\net452\TracerLibrary.dll = ThirdParty\Tracer\net452\TracerLibrary.dll
-		ThirdParty\Tracer\net452\TracerLibrary.pdb = ThirdParty\Tracer\net452\TracerLibrary.pdb
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkflowTest", "WorkflowTest\WorkflowTest.csproj", "{6B65FE7F-FE3D-49CC-915B-F8746F8DB74D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "net6.0", "net6.0", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
@@ -38,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "net6.0", "net6.0", "{02EA68
 		ThirdParty\Tracer\net6.0\TracerLibrary.dll = ThirdParty\Tracer\net6.0\TracerLibrary.dll
 		ThirdParty\Tracer\net6.0\TracerLibrary.pdb = ThirdParty\Tracer\net6.0\TracerLibrary.pdb
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkflowTerminal", "WorkflowTerminal\WorkflowTerminal.csproj", "{F901812C-81FE-384D-DECD-31E971643D97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,14 +57,16 @@ Global
 		{6B65FE7F-FE3D-49CC-915B-F8746F8DB74D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B65FE7F-FE3D-49CC-915B-F8746F8DB74D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B65FE7F-FE3D-49CC-915B-F8746F8DB74D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F901812C-81FE-384D-DECD-31E971643D97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F901812C-81FE-384D-DECD-31E971643D97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F901812C-81FE-384D-DECD-31E971643D97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F901812C-81FE-384D-DECD-31E971643D97}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F1074CCB-5B00-4167-9371-1833672A8C03} = {CF91F97B-5FF9-4860-8972-644A9AE5F13B}
-		{3A21CD5E-84E4-4EC7-92A1-ACDF440F7C40} = {F1074CCB-5B00-4167-9371-1833672A8C03}
-		{6C20FD6C-B83B-4345-ABA1-9544E850999B} = {F1074CCB-5B00-4167-9371-1833672A8C03}
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {F1074CCB-5B00-4167-9371-1833672A8C03}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
