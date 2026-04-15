@@ -43,7 +43,7 @@ namespace WorkflowTerminal
             }
 
             Parameter<string> logPath = new Parameter<string>("logPath", "");
-            Parameter<string> logName = new Parameter<string>("logName", "workflowterminal");
+            Parameter<string> logName = new Parameter<string>("logName", "workflowTray");
             logPath.Value = System.Reflection.Assembly.GetExecutingAssembly().Location;
             pos = logPath.Value.ToString().LastIndexOf(Path.DirectorySeparatorChar);
             if (pos > 0)

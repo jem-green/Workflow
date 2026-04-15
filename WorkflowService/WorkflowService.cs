@@ -112,7 +112,7 @@ namespace WorkflowService
                 appPath.Source = IParameter.SourceType.App;
             }
 
-            Parameter<string> logPath = new Parameter<string>("logName", "");
+            Parameter<string> logPath = new Parameter<string>("logPath", "");
             Parameter<string> logName = new Parameter<string>("logName","workflowservice");
             logPath.Value = System.Reflection.Assembly.GetExecutingAssembly().Location;
             pos = logPath.Value.ToString().LastIndexOf(Path.DirectorySeparatorChar);
@@ -137,7 +137,6 @@ namespace WorkflowService
             System.Diagnostics.Trace.Listeners.Clear();
             System.Diagnostics.Trace.Listeners.Add(listener);
 
-   
             // Check if the registry has been set and overwrite the application defaults
 
             RegistryKey key = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry64);
@@ -243,7 +242,7 @@ namespace WorkflowService
                     traceName = traceName.TrimEnd('"');
                     traceLevels.Value = TraceInternal.TraceLookup(traceName);
                     traceLevels.Source = IParameter.SourceType.Registry;
-                    TraceInternal.TraceVerbose("Use command value Debug=" + traceLevels);
+                    TraceInternal.TraceVerbose("Use registry value; Debug=" + traceLevels.Value);
                 }
             }
             catch (NullReferenceException)

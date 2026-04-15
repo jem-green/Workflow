@@ -32,7 +32,7 @@ namespace WorkflowTray
 		{
 			// Instantiate the NotifyIcon object.
 			_notifyIcon = new NotifyIcon();
-            _manager = new ServiceManager("Workflow");
+            _manager = new ServiceManager("Workflow Service");
 		}
 
 		/// <summary>
@@ -43,7 +43,7 @@ namespace WorkflowTray
 			// Put the icon in the system tray and allow it react to mouse clicks.			
 			_notifyIcon.MouseClick += new MouseEventHandler(NotifyIconi_MouseClick);
 			_notifyIcon.Icon = Resources.WorkflowTray;
-			_notifyIcon.Text = "Workflow";
+			_notifyIcon.Text = "Workflow Service";
 			_notifyIcon.Visible = true;
 
             ToolStripMenuItem item;
