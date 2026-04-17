@@ -16,27 +16,27 @@ namespace WorkflowLibrary
     {
         #region Fields
 
-        private IndexCollection<string,IActivity> activities;
-        private static int processId;
+        private IndexCollection<string,IActivity> _activities;
+        private static int _processId;
 
         #endregion
         #region Constructors
 
         public Process()
         {
-            activities = new IndexCollection<string, IActivity>();
-            processId = processId + 1;
-            _id = "process_" + processId.ToString();
+            _activities = new IndexCollection<string, IActivity>();
+            _processId = _processId + 1;
+            _id = "process_" + _processId.ToString();
         }
         public Process(string Id)
         {
-            activities = new IndexCollection<string, IActivity>();
+            _activities = new IndexCollection<string, IActivity>();
             _id = Id;
             if (Id.StartsWith("process_"))
             {
-                if (processId < Convert.ToInt16(Id.Substring(8)))
+                if (_processId < Convert.ToInt16(Id.Substring(8)))
                 {
-                    processId = Convert.ToInt16(Id.Substring(8));
+                    _processId = Convert.ToInt16(Id.Substring(8));
                 }
             }
         }
@@ -58,7 +58,7 @@ namespace WorkflowLibrary
             try
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Add activity:" + activity.Description);
-                activities.Add(activity.ID, activity);
+                _activities.Add(activity.ID, activity);
                 add = true;
             }
             catch { }
@@ -84,7 +84,7 @@ namespace WorkflowLibrary
 
         public IEnumerator<IActivity> GetEnumerator()
         {
-            return activities.GetEnumerator();
+            return _activities.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -111,7 +111,7 @@ namespace WorkflowLibrary
         {
             Debug.WriteLine("[" + sessionId + "] In Start() " + _id + "(" + _name + ")");
 
-            // All the jobs run in separate threads so get lauched 
+            // All the jobs run in separate threads so get launched 
             // at the same time
 
             int perform = 0;
@@ -124,15 +124,15 @@ namespace WorkflowLibrary
  
             // link up the objects
 
-            linkObjects(activities);
+            linkObjects(_activities);
 
             // Link up the pipes
 
-            JoinPipes(activities);
+            JoinPipes(_activities);
 
             // Launch the job threads
 
-            foreach (object item in activities)
+            foreach (object item in _activities)
             {
                 if (item.GetType() == typeof(Job))
                 {
@@ -145,6 +145,12 @@ namespace WorkflowLibrary
                     Event @event = (Event)item;
                     Thread eventThread = new Thread(new ThreadStart(@event.Start));
                     eventThread.Start();
+                }
+                else if (item.GetType() == typeof(Decision))
+                {
+                    Decision decision = (Decision)item;
+                    Thread decisionThread = new Thread(new ThreadStart(decision.Start));
+                    decisionThread.Start();
                 }
             }
 
@@ -187,6 +193,42 @@ namespace WorkflowLibrary
                 do
                 {
                     Thread.Sleep(1000);
+
+                    bool complete = true;
+
+                    foreach (object item in _activities)
+                    {
+                        IActivity activity = null;
+
+                        if (item.GetType() == typeof(Job))
+                        {
+                            activity = (Job)item;
+                        }
+                        else if (item.GetType() == typeof(Event))
+                        {
+                            activity = (Event)item;
+                        }
+                        else if (item.GetType() == typeof(Decision))
+                        {
+                            activity = (Decision)item;
+                        }
+
+                        if (activity != null)
+                        {
+                            // Job is still active if it's in Active or Ready state
+                            // Jobs with no catch nodes will terminate themselves
+                            // Jobs with catch nodes stay in loop unless terminated
+                            if (activity.State == StateType.Active && activity.State == StateType.Ready)
+                            {
+                                complete = complete & false;
+                                break;
+                            }
+                        }
+                    }
+                    if (complete == true)
+                    {
+                        terminate = true;
+                    }
                 }
                 while ((cancel == false) && (terminate == false)) ;
                 if (perform == 0)
@@ -232,7 +274,7 @@ namespace WorkflowLibrary
             //    }
             //}
 
-            foreach (IActivity activity in activities)
+            foreach (IActivity activity in _activities)
             {
                 if (activity.GetType() == typeof(Job))
                 {
@@ -247,6 +289,13 @@ namespace WorkflowLibrary
                     TraceInternal.TraceVerbose("[" + _sessionId + "] Update event " + @event.ID + "(" + @event.Name + ") data");
                     this._data = data;
                     @event.Update(ref data, _hierarchy);   // Propagate the data and hierarchy
+                }
+                else if (activity.GetType() == typeof(Decision))
+                {
+                    Decision decision = (Decision)activity;
+                    TraceInternal.TraceVerbose("[" + _sessionId + "] Update decision " + decision.ID + "(" + decision.Name + ") data");
+                    this._data = data;
+                    decision.Update(ref data, _hierarchy);   // Propagate the data and hierarchy
                 }
             }
 
@@ -286,7 +335,7 @@ namespace WorkflowLibrary
             TraceInternal.TraceVerbose("[" + _sessionId + "] State=" + StateDescription(_state));
             this.cancel = true;
 
-            foreach (Job job in activities)
+            foreach (Job job in _activities)
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] job.State=" + StateDescription(job.State));
                 if (job.State == StateType.Active)
@@ -312,7 +361,7 @@ namespace WorkflowLibrary
             _state = StateType.Terminating;
             TraceInternal.TraceVerbose("[" + _sessionId + "] State=" + StateDescription(_state));
 
-            foreach (Job job in activities)
+            foreach (Job job in _activities)
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Job.State=" + StateDescription(job.State));
                 if (job.State == Task.StateType.Active)
@@ -338,7 +387,7 @@ namespace WorkflowLibrary
             _state = StateType.Inactive;
             TraceInternal.TraceVerbose("[" + _sessionId + "] State=" + StateDescription(_state));
 
-            foreach (Job job in activities)
+            foreach (Job job in _activities)
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] JOb.State=" + StateDescription(job.State));
                 if (job.State != Task.StateType.Active)
@@ -417,6 +466,29 @@ namespace WorkflowLibrary
                             foreach (Node node in @event.Catch)
                             {
                                 if ((@event.ID == link.To) && (node.IsLinked == false))
+                                {
+                                    node.Link = link;
+                                    TraceInternal.TraceVerbose("Link " + link.ID + ", caught from " + link.From + " to " + link.To);
+                                    break;
+                                }
+                            }
+                        }
+                        else if (obj.GetType() == typeof(Decision))
+                        {
+                            Decision decision = (Decision)obj;
+                            foreach (Node node in decision.Throw)
+                            {
+                                if ((decision.ID == link.From) && (node.IsLinked == false))
+                                {
+                                    node.Link = link;
+                                    TraceInternal.TraceVerbose("Link " + link.ID + ", thrown from " + link.From + " to " + link.To);
+                                    break;
+                                }
+                            }
+
+                            foreach (Node node in decision.Catch)
+                            {
+                                if ((decision.ID == link.To) && (node.IsLinked == false))
                                 {
                                     node.Link = link;
                                     TraceInternal.TraceVerbose("Link " + link.ID + ", caught from " + link.From + " to " + link.To);

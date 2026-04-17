@@ -18,7 +18,7 @@ namespace WorkflowLibrary
 
         /// <summary>
         /// link class implements a queue designed to be used by multiple threads to exchange messages.
-        /// Any thread can post an item to the queue with PutItem(), and any thread can retrieve items with GetItem().Node
+        /// Any thread can post an item to the queue with PutItem(), and any thread can retrieve _items with GetItem().Node
         /// GetItem has a maxWait parameter which specifies the amount of time the receiving thread will block
         /// waiting for an item.  If this value is -1, blocking is indefinite.
         /// </summary>
@@ -97,7 +97,7 @@ namespace WorkflowLibrary
             }
         }
 
-        #endregion Properites
+        #endregion Properties
         #region Methods
 
         /// <summary>
@@ -124,9 +124,9 @@ namespace WorkflowLibrary
         }
 
         /// <summary>
-        /// Get the count of items on the queue
+        /// Get the count of _items on the queue
         /// </summary>
-        /// <returns>Count of items on the queue</returns>
+        /// <returns>Count of _items on the queue</returns>
         public int Count()
         {
             return (_queue.Count);

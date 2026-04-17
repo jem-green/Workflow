@@ -8,7 +8,7 @@ using TracerLibrary;
 namespace WorkflowLibrary
 {
     /// <summary>
-    /// Coupler joins pipe to items, delivering payloads
+    /// Coupler joins pipe to _items, delivering payloads
     /// </summary>
 	public class Coupler
 	{

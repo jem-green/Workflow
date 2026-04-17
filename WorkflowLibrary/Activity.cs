@@ -122,8 +122,11 @@ namespace WorkflowLibrary
                             if (token == false)
                             {
                                 tokenData = node.Link.GetItem();
-                                token = (bool)tokenData.SelectData("token");
-                                caught = node.Id;
+                                if (tokenData != null)
+                                {
+                                    token = (bool)tokenData.SelectData("token");
+                                    caught = node.Id;
+                                }
                             }
                             else
                             {
@@ -225,15 +228,15 @@ namespace WorkflowLibrary
             TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
             cancel = false;
 
-            if (taskIndex == 0)
-            {
-                TraceInternal.TraceVerbose("[" + sessionId + "] Reset data");    // 
-                sessionId = Id.UniqueCode();                    // Create a new session id assuming the job restarts
-                _data.Clear();                                   // Clear out the data
-                _data = (ArrayList)_localData.Clone();            // Clone the local data
-                _hierarchy.Clear();                              // Clear out the hierarchy
-                this.Update();                                  // Replicate the data
-            }
+            //if (taskIndex == 0 && _dataId >= 0 && _dataId < _data.Count)
+            //{
+            //    TraceInternal.TraceVerbose("[" + sessionId + "] Reset local data slot");
+            //    // Only replace THIS Job's data slot
+            //    _data[_dataId] = (ArrayList)_localData.Clone();
+            //    sessionId = Id.UniqueCode();
+            //    // Don't call Update() - we don't have parent context
+            //}
+
             if (tasks.Count > 0)
             {
                 try
@@ -301,12 +304,14 @@ namespace WorkflowLibrary
                                 }
                                 else if (taskIndex == 0)
                                 {
-                                    TraceInternal.TraceVerbose("[" + sessionId + "] Reset data");    // 
-                                    _data.Clear();                                   // Clear out the data
-                                    _data = (ArrayList)_localData.Clone();            // Clone the local data
-                                    _hierarchy.Clear();                              // Clear out the hierarchy
-                                    this.Update();                                  // Replicate the data
-                                    sessionId = Id.UniqueCode();                    // Create a new session id assuming the job restarts
+                                    TraceInternal.TraceVerbose("[" + sessionId + "] Reset data (loop restart)");
+                                    // Only reset THIS Job's data slot, not entire hierarchy
+                                    if (_dataId >= 0 && _dataId < _data.Count)
+                                    {
+                                        _data[_dataId] = (ArrayList)_localData.Clone();
+                                    }
+                                    sessionId = Id.UniqueCode();
+                                    // Don't clear _hierarchy - keep navigation path!
                                 }
                                 else if (taskIndex >= tasks.Count)
                                 {
@@ -361,7 +366,7 @@ namespace WorkflowLibrary
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
             tempData = (ArrayList)_localData.Clone();                    // Preserve the localdata and clone.
-            _dataId = data.Add(tempData);                                // add the tempdate pointer to the data array list.
+            _dataId = data.Add(tempData);                                // add the tempdata pointer to the data array list.
             if (parentHierarchy.Count == 0)
             {
                 _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we don't have a process -1 means don't check now
@@ -372,10 +377,11 @@ namespace WorkflowLibrary
             }
             _hierarchy.Insert((int)StageType.Job, _dataId);     // update the local hierarchy.
 
+            this._data = data;
+
             foreach (Task task in tasks)
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Update task " + task.ID + "(" + task.Name + ") data");
-                this._data = data;
                 task.Update(ref data, _hierarchy);   // Propagate the data and hierarchy
             }
 

@@ -7,7 +7,7 @@ using TracerLibrary;
 namespace WorkflowLibrary
 {
     /// <summary>
-    /// pipe class implements a an event based conduit between items
+    /// pipe class implements a an event based conduit between _items
     /// </summary>
     public class Pipe : Element
     {

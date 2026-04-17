@@ -14,7 +14,7 @@ namespace WorkflowLibrary
         #region Fields
 
         private static int taskId;
-        private IndexCollection<string, Item> items;
+        private IndexCollection<string, Item> _items;
         protected string _next = "";
         protected string _previous = "";
 
@@ -23,14 +23,14 @@ namespace WorkflowLibrary
 
         public Task() : base()
         {
-            items = new IndexCollection<string, Item>();
+            _items = new IndexCollection<string, Item>();
             taskId = taskId + 1;
             _id = "task_" + taskId.ToString();
         }        
         
         public Task(string id) : base(id)
         {
-            items = new IndexCollection<string, Item>();
+            _items = new IndexCollection<string, Item>();
             this._id = id;
             if (id.StartsWith("task_"))
             {
@@ -83,7 +83,7 @@ namespace WorkflowLibrary
             try
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Add item:" + item.Description);
-                items.Add(item.ID, item);
+                _items.Add(item.ID, item);
                 add = true;
             }
             catch { }
@@ -101,7 +101,7 @@ namespace WorkflowLibrary
             try
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Remove item:" + item.Description);
-                items.Remove(item);
+                _items.Remove(item);
                 remove = true;
             }
             catch { }
@@ -110,7 +110,7 @@ namespace WorkflowLibrary
 
         public IEnumerator<Item> GetEnumerator()
         {
-            return items.GetEnumerator();
+            return _items.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -177,10 +177,10 @@ namespace WorkflowLibrary
 
             // There are two modes of operation here the simplistic each item is synchronous and
             // this is expanding to a asynchronous solution where each item runs in its own thread and messaging could be used to collaborate
-            // between the items. Is this the best place for this. It might be better to have the jobs in separate threads and still have item
+            // between the _items. Is this the best place for this. It might be better to have the jobs in separate threads and still have item
             // collaboration.
 
-            foreach (Item item in items)
+            foreach (Item item in _items)
             {
                 TraceInternal.TraceVerbose("[" + sessionId + "] Process item:" + item.ID + "(" + item.Name + ")");
                 if ((cancel == false) && (terminate == false))
@@ -227,7 +227,7 @@ namespace WorkflowLibrary
             //    }
             //}
 
-            foreach (Item item in items)
+            foreach (Item item in _items)
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Update item:" + item.ID + "(" + item.Name + ")");
                 _data = data;
@@ -267,7 +267,7 @@ namespace WorkflowLibrary
         {
             Debug.WriteLine("[" + _sessionId + "] In Cancel() " + _id + "(" + _name + ")");
             cancel = true;
-            foreach (Item item in items)
+            foreach (Item item in _items)
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Item.State=" + item.State);
                 if (item.State == Item.StateType.Active)
@@ -285,14 +285,15 @@ namespace WorkflowLibrary
             TraceInternal.TraceVerbose("[" + _sessionId + "] State=" + StateDescription(_state));
             cancel = true;
             Debug.WriteLine("[" + _sessionId + "] Out cancel() " + _id + "(" + _name + ")");
-         }
+        }
 
         public override void Terminate()
         {
             Debug.WriteLine("[" + _sessionId + "] In Terminate() " + _id + "(" + _name + ")");
             _state = StateType.Terminating;
             TraceInternal.TraceVerbose("[" + _sessionId + "] State=" + StateDescription(_state));
-            foreach (Item item in items)
+
+            foreach (Item item in _items)
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Item.State=" + StateDescription(item.State));
                 if (item.State == Item.StateType.Active)
@@ -318,7 +319,7 @@ namespace WorkflowLibrary
             _state = StateType.Inactive;
             TraceInternal.TraceVerbose("[" + _sessionId + "] State=" + StateDescription(_state));
 
-            foreach (Item item in items)
+            foreach (Item item in _items)
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] State=" + StateDescription(_state));
                 if (item.State != Item.StateType.Active)

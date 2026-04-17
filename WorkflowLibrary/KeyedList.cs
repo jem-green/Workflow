@@ -370,7 +370,7 @@ namespace WorkflowLibrary
 
        // public IEnumerator<Item> GetEnumerator()
       //  {
-      //      return items.GetEnumerator();
+      //      return _items.GetEnumerator();
       //  }
       //  IEnumerator IEnumerable.GetEnumerator()
       //  {
