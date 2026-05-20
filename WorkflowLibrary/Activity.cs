@@ -99,7 +99,7 @@ namespace WorkflowLibrary
             // Once the token has arrived then the state goes to ready
 
             bool thrown = false;
-            Token tokenData = new Token(sessionId);
+            Token tokenData = new Token(Id.UniqueCode());
             bool token = false;
             tokenData.AddData("token", token);
             string caught = "";
@@ -108,8 +108,6 @@ namespace WorkflowLibrary
             terminate = false;
             _state = StateType.Inactive;
             TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
-
-            Groupings replace = new Groupings();
 
             do
             {
@@ -140,7 +138,7 @@ namespace WorkflowLibrary
                         }
                         else
                         {
-                            TraceInternal.TraceVerbose("[" + sessionId + "] Caught message (" + tokenData + ") from " + caught);
+                            TraceInternal.TraceInformation("[" + sessionId + "] Caught message (true) from " + caught);
                         }
                     } while (token == false);
                     _state = StateType.Ready;
@@ -153,11 +151,11 @@ namespace WorkflowLibrary
                 
                 if (((cancel == false) && (terminate == false)) || (@catch.Count==0))
                 {
-                    TraceInternal.TraceVerbose("[" + sessionId + "] Process:" + _id + "(" + _name + ")");
+                    TraceInternal.TraceInformation("[" + sessionId + "] Process:" + _id + "(" + _name + ")");
 
                     // Run perform
 
-                    process = this.Perform();
+                    process = this.Perform(sessionId);
 
                     // Possibly send the throw event
                     // check if cancelled or terminated
@@ -169,14 +167,14 @@ namespace WorkflowLibrary
                             bool result = true;
                             if (node.Link.Expression.Length > 0)
                             {
-                                result = node.Link.Evaluate(replace.ReplaceGrouping(node.Link.Expression, _data, _hierarchy));
+                                result = node.Link.Evaluate(Replacer.ReplaceGrouping(node.Link.Expression, _data, _hierarchy));
                             }
                             if (((result == true) && (process == 0)) || ((result == false) && (process > 0)))
                             {
                                 tokenData = new Token(sessionId);
                                 tokenData.AddData("token", true);
                                 thrown = node.Link.PutItem(tokenData);
-                                TraceInternal.TraceVerbose("[" + sessionId + "] Throw message (true) to " + node.Id);
+                                TraceInternal.TraceInformation("[" + sessionId + "] Throw message (true) to " + node.Id);
                             }
                         }
                     }
@@ -308,7 +306,7 @@ namespace WorkflowLibrary
                                     // Only reset THIS Job's data slot, not entire hierarchy
                                     if (_dataId >= 0 && _dataId < _data.Count)
                                     {
-                                        _data[_dataId] = (ArrayList)_localData.Clone();
+                                        _data[_dataId] = _localData;
                                     }
                                     sessionId = Id.UniqueCode();
                                     // Don't clear _hierarchy - keep navigation path!
@@ -356,26 +354,27 @@ namespace WorkflowLibrary
 
         public override void Update()
         {
-            ArrayList data = new ArrayList();
-            ArrayList parentHierarchy = new ArrayList();
+            List<Grouping> data = new List<Grouping>();
+            List<int> parentHierarchy = new List<int>();
             Update(ref data, parentHierarchy);
         }
 
-        public override void Update(ref ArrayList data, ArrayList parentHierarchy)
+        public override void Update(ref List<Grouping> data, List<int> parentHierarchy)
         {
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
-            tempData = (ArrayList)_localData.Clone();                    // Preserve the localdata and clone.
-            _dataId = data.Add(tempData);                                // add the tempdata pointer to the data array list.
+            _tempData = new Grouping(_localData);                       // Preserve the localdata and clone.
+            data.Add(_tempData);                                        // Add the tempdata to the data array list.
+            _dataId = data.Count - 1;                                   // add the tempdata pointer to the data array list.
             if (parentHierarchy.Count == 0)
             {
-                _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we don't have a process -1 means don't check now
+                _hierarchy.Insert((int)StageType.Process, -1);          // fix issue where we don't have a process -1 means don't check now
             }
             else
             {
-                _hierarchy = (ArrayList)parentHierarchy.Clone();     // Copy the parent hierarchy
+                _hierarchy = new List<int>(parentHierarchy);            // Copy the parent hierarchy
             }
-            _hierarchy.Insert((int)StageType.Job, _dataId);     // update the local hierarchy.
+            _hierarchy.Insert((int)StageType.Job, _dataId);             // update the local hierarchy.
 
             this._data = data;
 

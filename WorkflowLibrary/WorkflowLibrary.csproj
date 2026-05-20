@@ -6,6 +6,9 @@
     <Compile Remove="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="TracerLibrary">
       <HintPath>..\ThirdParty\Tracer\net6.0\TracerLibrary.dll</HintPath>
     </Reference>

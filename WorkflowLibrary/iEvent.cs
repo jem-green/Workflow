@@ -13,7 +13,7 @@ namespace WorkflowLibrary
         string Name { get; set; }
         bool Enabled { get; set; }
         string Description { get; set; }
-        ArrayList Data {get; }
+        List<Grouping> Data {get; }
         List<Node> Throw {get; }
         List<Node> Catch {get; }
         State.StateType State { get; }
@@ -24,7 +24,7 @@ namespace WorkflowLibrary
         void Activate();
         bool Add(Task task);
         bool AddCatch(Node value);
-        bool AddData(string key, object value);
+        bool AddLocalData(string key, object value);
         bool AddThrow(Node value);
         void Cancel();
         object Clone();
@@ -39,7 +39,7 @@ namespace WorkflowLibrary
         void Start(string sessionId);
         void Start(int index, string sessionId);
         void Terminate();
-        void Update(ref ArrayList Data, ArrayList Hierarchy);
+        void Update(ref List<Grouping> Data, List<int> Hierarchy);
 
         #endregion
     }

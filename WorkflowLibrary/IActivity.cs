@@ -13,7 +13,7 @@ namespace WorkflowLibrary
         string Name { get; set; }
         bool Enabled { get; set; }
         string Description { get; set; }
-        ArrayList Data { get; }
+        List<Grouping> Data { get; }
         List<Node> Throw { get; }
         List<Node> Catch { get; }
 
@@ -22,7 +22,7 @@ namespace WorkflowLibrary
 
         bool AddCatch(Node value);
         bool AddThrow(Node value);
-        bool AddData(string key, object value);
+        bool AddLocalData(string key, object value);
         bool RemoveData(string key);
         void Activate();
         void Cancel();
@@ -31,7 +31,7 @@ namespace WorkflowLibrary
         int Perform(string sessionId);
         int Perform(int elementIndex, string sessionId);
         void Update();
-        void Update(ref ArrayList data, ArrayList parentHierarchy);
+        void Update(ref List<Grouping> data, List<int> parentHierarchy);
         void Start();
         void Start(string sessionId);
         void Start(int activityIndex);

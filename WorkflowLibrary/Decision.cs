@@ -2,10 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
-using TracerLibrary;
-using System.Threading;
+using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.Text;
+using System.Threading;
+using TracerLibrary;
+using static WorkflowLibrary.KVP;
 
 namespace WorkflowLibrary 
 {
@@ -118,40 +120,71 @@ namespace WorkflowLibrary
 
             bool thrown = false;
             Token tokenData = new Token(sessionId);
-            bool token = false;
-            tokenData.AddData("token", token);
+            //bool token = false;
+            //tokenData.AddLocalData("token", token);
             string caught = "";
             int process = 0;
             cancel = false;
             terminate = false;
             _state = StateType.Inactive;
             TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
-            Groupings replace = new Groupings();
+
+            bool match;
+            string catchType = "OR";
 
             do
             {
                 if ((@catch.Count > 0) && (cancel == false) && (terminate == false))
                 {
-                    do
+                    do   // Wait for one/some/all tokens to arrive
                     {
-                        foreach (Node node in @catch)
+                        if (catchType == "AND")
                         {
-                            if (token == false)
+
+                            // Test the AND logic
+
+                            match = true;
+                            foreach (Node node in @catch)
                             {
-                                tokenData = node.Link.GetItem();
+                                tokenData = node.Link.PeekItem(0);
+                                // not sure what this returns as default(Token)
                                 if (tokenData != null)
                                 {
-                                    token = (bool)tokenData.SelectData("token");
-                                    caught = node.Id;
+                                    if ((bool)tokenData.SelectData("token"))
+                                    {
+                                        match = match & true;
+                                    }
                                 }
                             }
-                            else
+                            // somehow need to remove the tokens from the queues if they are all true
+                        }
+                        else if (catchType == "OR")
+                        {
+
+                            // Test the OR logic
+
+                            match = false;
+                            foreach (Node node in @catch)
                             {
-                                break;
+                                tokenData = node.Link.PeekItem(0);
+                                // not sure what this returns as default(Token)
+                                if (tokenData != null)
+                                {
+                                    if ((bool)tokenData.SelectData("token"))
+                                    {
+                                        node.Link.GetItem();  // remove the token from the queue
+                                        match = match | true;
+                                        break;
+                                    }
+                                }
                             }
                         }
+                        else
+                        {
+                            match = true;
+                        }
 
-                        if (token == false)
+                        if (match == false)
                         {
                             Thread.Sleep(1000);
                         }
@@ -159,10 +192,16 @@ namespace WorkflowLibrary
                         {
                             TraceInternal.TraceVerbose("[" + sessionId + "] Caught message (" + tokenData + ") from " + caught);
                         }
-                    } while (token == false);
+
+                    } while (match == false);
                     _state = StateType.Ready;
                     TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
                 }
+
+                // From the identified documents it seems that new token(s)
+                // need generating if there is a split. The data will need copying
+                // to the new token(s) and the new token(s) sent to the relevant linked jobs.
+                // This is where the decision logic will be applied to determine which path to take.
 
                 tokenData.UpdateData("token", false);
 
@@ -170,7 +209,7 @@ namespace WorkflowLibrary
                 
                 if (((cancel == false) && (terminate == false)) || (@catch.Count==0))
                 {
-                    TraceInternal.TraceVerbose("[" + sessionId + "] Process:" + _id + "(" + _name + ")");
+                    TraceInternal.TraceInformation("[" + sessionId + "] Process:" + _id + "(" + _name + ")");
 
                     // Run perform
 
@@ -179,23 +218,48 @@ namespace WorkflowLibrary
                     // This is where the decisions is made to throw the message
                     // Possibly send the throw decision
 
+                    string throwType = "OR";
+
                     if ((@throw.Count > 0) && (cancel == false) && (terminate == false))
                     {
-                        foreach (Node node in @throw)
+                        if (throwType == "AND")
                         {
-                            bool result = true;
-                            if (node.Link.Expression.Length > 0)
+                            foreach (Node node in @throw)
                             {
-                                result = node.Link.Evaluate(replace.ReplaceGrouping(node.Link.Expression, _data, _hierarchy));
-                            }
-                            if (((result == true) && (process == 0)) || ((result == false) && (process > 0)))
-                            {
-                                tokenData = new Token(sessionId);
-                                tokenData.AddData("token", true);
-                                thrown = node.Link.PutItem(tokenData);
-                                TraceInternal.TraceVerbose("[" + sessionId + "] Throw message (true) to " + node.Id);
+                                bool result = true;
+                                if (node.Link.Expression.Length > 0)
+                                {
+                                    result = node.Link.Evaluate(Replacer.ReplaceGrouping(node.Link.Expression, _data, _hierarchy));
+                                }
+                                if (((result == true) && (process == 0)) || ((result == false) && (process > 0)))
+                                {
+                                    tokenData = new Token(sessionId);
+                                    tokenData.AddData("token", true);
+                                    thrown = node.Link.PutItem(tokenData);
+                                    TraceInternal.TraceVerbose("[" + sessionId + "] Throw message (true) to " + node.Id);
+                                }
                             }
                         }
+                        else if (throwType == "OR")
+                        {
+                            foreach (Node node in @throw)
+                            {
+                                bool result = true;
+                                if (node.Link.Expression.Length > 0)
+                                {
+                                    result = node.Link.Evaluate(Replacer.ReplaceGrouping(node.Link.Expression, _data, _hierarchy));
+                                }
+                                if (((result == true) && (process == 0)) || ((result == false) && (process > 0)))
+                                {
+                                    tokenData = new Token(sessionId);
+                                    tokenData.AddData("token", true);
+                                    thrown = node.Link.PutItem(tokenData);
+                                    TraceInternal.TraceVerbose("[" + sessionId + "] Throw message (true) to " + node.Id);
+                                    break;
+                                }
+                            }
+                        }
+
                     }
 
                     // Extra logic required here to identify that the start event has fired once.
@@ -236,17 +300,17 @@ namespace WorkflowLibrary
 
             foreach (Item item in _items)
             {
-                TraceInternal.TraceVerbose("[" + sessionId + "] Process item:" + item.ID + "(" + item.Name + ")");
+                TraceInternal.TraceInformation("[" + sessionId + "] Process item:" + item.ID + "(" + item.Name + ")");
                 if ((cancel == false) && (terminate == false))
                 {
                     process = item.Perform(sessionId);
                     if (process == 0)
                     {
-                        TraceInternal.TraceVerbose("[" + sessionId + "] OK (" + process + ")");
+                        TraceInternal.TraceInformation("[" + sessionId + "] OK (" + process + ")");
                     }
                     else
                     {
-                        TraceInternal.TraceVerbose("[" + sessionId + "] Error (" + process + ")");
+                        TraceInternal.TraceError("[" + sessionId + "] Error (" + process + ")");
                         break;  // This will exit out on an error
                     }
                 }
@@ -266,18 +330,20 @@ namespace WorkflowLibrary
             return (process);
         }
 
-        public override void Update(ref ArrayList data, ArrayList parentHierarchy)
+        public override void Update(ref List<Grouping> data, List<int> parentHierarchy)
         {
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
-            tempData = (ArrayList)_localData.Clone();           // Preserve the localdata and clone.
-            _dataId = data.Add(tempData);                       // add the tempdata pointer to the data array list.
-            _hierarchy = (ArrayList)parentHierarchy.Clone();    // Copy the parent hierarchy
+            _tempData = new Grouping(_localData);            // Preserve the localdata and clone.
+            data.Add(_tempData);                                 // add the tempdata pointer to the data array list.
+            _dataId = data.Count - 1;                           // point to the end of the data array list.
+            _hierarchy = new List<int>(parentHierarchy);        // Copy the parent hierarchy
 
-            _hierarchy.Insert((int)StageType.Job, _dataId);    // Add the tempdata reference to the end
+
+            _hierarchy.Insert((int)StageType.Job, _dataId);     // Add the tempdata reference to the end
 
 
-            _data = data;
+            _data = new List<Grouping>(data);
 
             // Only propagate to _items if they exist
             foreach (Item item in _items)

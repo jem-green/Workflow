@@ -182,7 +182,7 @@ namespace WorkflowLibrary
 
             foreach (Item item in _items)
             {
-                TraceInternal.TraceVerbose("[" + sessionId + "] Process item:" + item.ID + "(" + item.Name + ")");
+                TraceInternal.TraceInformation("[" + sessionId + "] Process item:" + item.ID + "(" + item.Name + ")");
                 if ((cancel == false) && (terminate == false))
                 {
                     process = item.Perform(sessionId);
@@ -209,13 +209,13 @@ namespace WorkflowLibrary
             return (process);
         }
 
-        public override void Update(ref ArrayList data, ArrayList parentHierarchy)
+        public override void Update(ref List<Grouping> data, List<int> parentHierarchy)
         {
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
-            tempData = (ArrayList)_localData.Clone();           // Preserve the localdata and clone.
-            _dataId = data.Add(tempData);                       // add the tempdata pointer to the data array list.
-            _hierarchy = (ArrayList)parentHierarchy.Clone();    // Copy the parent hierarchy
+            _tempData = new Grouping(_localData);           // Preserve the localdata and clone.
+            _dataId = data.Count - 1;                       // add the tempdata pointer to the data array list.
+            _hierarchy = new List<int>(parentHierarchy);    // Copy the parent hierarchy
 
             _hierarchy.Insert((int)StageType.Task, _dataId);    // Add the tempdata reference to the end
                         

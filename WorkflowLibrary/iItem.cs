@@ -26,7 +26,7 @@ namespace WorkflowLibrary
         #region Methods
 
         void Activate();
-        bool AddData(string key, object value);
+        bool AddLocalData(string key, object value);
         void Cancel();
         object Clone();
         int Perform();
@@ -35,11 +35,11 @@ namespace WorkflowLibrary
         int Perform(int index, string sessionId);
         bool RemoveData(string key);
         void Start();
-        void Start(int index);
+        void Start(int index);  
         void Start(string sessionId);
         void Start(int index, string sessionId);
         void Terminate();
-        void Update(ref ArrayList Data, ArrayList Hierarchy);
+        void Update(ref List<Grouping> Data, List<int> Hierarchy);
 
         #endregion
     }

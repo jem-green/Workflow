@@ -144,13 +144,13 @@ namespace WorkflowLibrary
         #endregion Properties
         #region Methods
 
-        public override bool AddData(string key, object value)
+        public override bool AddLocalData(string key, object value)
         {
             bool add = false;
             try
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] key=" + key + " value=" + value);
-                DictionaryEntry item = new DictionaryEntry(key,value);
+                KeyValuePair<string, object> item = new KeyValuePair<string, object>(key, value);
                 _localData.Add(item);
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Add local data: key=" + key + " value=" + value);
                 add = true;
@@ -238,9 +238,7 @@ namespace WorkflowLibrary
             cancel = false;
             received = false;   // 8/2/2015 JPG fix early trigger of received status as process speed has increased
                                 // Assumption is that data has always been received
-            
-            Groupings replace = new Groupings();
-                                                                                                                                                                    
+                                                                                                                                                              
             // Create a process to handle the activity 
 
             proc = new System.Diagnostics.Process();
@@ -253,8 +251,8 @@ namespace WorkflowLibrary
 
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
-                FileName = replace.ReplaceGrouping(application, _data, _hierarchy),
-                Arguments = replace.ReplaceGrouping(command, _data, _hierarchy),
+                FileName = Replacer.ReplaceGrouping(application, _data, _hierarchy),
+                Arguments = Replacer.ReplaceGrouping(command, _data, _hierarchy),
                 CreateNoWindow = false,
                 UseShellExecute = false
             };
@@ -325,7 +323,7 @@ namespace WorkflowLibrary
                     else
                     {
 
-                        string inputData = replace.ReplaceGrouping((string)input.Value, _data, _hierarchy);
+                        string inputData = Replacer.ReplaceGrouping((string)input.Value, _data, _hierarchy);
                         using (System.IO.StreamWriter inputStream = proc.StandardInput)
                         {
                             inputStream.WriteLine(input.Value);
@@ -422,7 +420,7 @@ namespace WorkflowLibrary
 
 
             string receivedData = buffer;
-            DictionaryEntry item;
+            KeyValuePair<string, object> item;
             received = false;   // 8/2/2015 JPG fix early trigger of received status as process speed has increased
                                 // Assumption is that data has always been received
 
@@ -449,25 +447,25 @@ namespace WorkflowLibrary
 
                                 TraceInternal.TraceVerbose("[" + _sessionId + "] Multiple output='" + receivedData + "'");
                                 bool passed = false;
-                                Dictionary<string, object> keyValues = KVP.KvpDecode(receivedData, ref passed);
+                                IDictionary<string, object> keyValues = KVP.KvpDecode(receivedData, ref passed);
 
                                 foreach (KeyValuePair<string,object> keyValue in keyValues)
                                 {
                                     key = keyValue.Key;
                                     value = keyValue.Value;
-                                    item = new DictionaryEntry(key, value);
+                                    item = new KeyValuePair<string, object>(key, value);
                                     TraceInternal.TraceVerbose("Data: key=" + key + " value=" + value);
 
                                         try
                                         {
                                             TraceInternal.TraceVerbose("stage=" + (int)output.Stage + " hierarchy[stage]=" + _hierarchy[(int)output.Stage]);
-                                            ArrayList stageData = (ArrayList)_data[(int)_hierarchy[(int)output.Stage]];   // Get the data for the appropriate stage
+                                            Grouping stageData = _data[_hierarchy[(int)output.Stage]];   // Get the data for the appropriate stage
 
                                             int count = 0;
-                                            DictionaryEntry existing;
+                                            KeyValuePair<string, object> existing;
                                             do
                                             {
-                                                existing = (DictionaryEntry)stageData[count];
+                                                existing = stageData[count];
                                                 if ((string)existing.Key == key)
                                                 {
                                                     TraceInternal.TraceVerbose("[" + _sessionId + "] Remove stage data: key=" + key);
@@ -506,20 +504,20 @@ namespace WorkflowLibrary
                                     {
                                         key = part[0].Trim('"');
                                         value = part[1].Trim('"');
-                                        item = new DictionaryEntry(key, value);
+                                        item = new KeyValuePair<string, object>(key, value);
                                         TraceInternal.TraceVerbose("Data: key=" + key + " value=" + value);
 
 
                                         try
                                         {
                                             TraceInternal.TraceVerbose("stage=" + (int)output.Stage + " hierarchy[stage]=" + _hierarchy[(int)output.Stage]);
-                                            ArrayList stageData = (ArrayList)_data[(int)_hierarchy[(int)output.Stage]];   // Get the data for the appropriate stage
+                                            Grouping stageData = _data[(int)_hierarchy[(int)output.Stage]];   // Get the data for the appropriate stage
 
                                             int count = 0;
-                                            DictionaryEntry existing;
+                                            KeyValuePair<string, object> existing;
                                             do
                                             {
-                                                existing = (DictionaryEntry)stageData[count];
+                                                existing = (KeyValuePair<string, object>)stageData[count];
                                                 if ((string)existing.Key == key)
                                                 {
                                                     TraceInternal.TraceVerbose("[" + _sessionId + "] Remove stage data: key=" + key);
@@ -576,28 +574,28 @@ namespace WorkflowLibrary
                                     TraceInternal.TraceVerbose("[" + _sessionId + "] value output='" + buffer + "'");
                                     key = (string)output.Value;
                                     value = receivedData;
-                                    item = new DictionaryEntry(key, value);
+                                    item = new KeyValuePair<string, object>(key, value);
                                     TraceInternal.TraceVerbose("Data: key=" + key + " value=" + value);
 
                                     try
                                     {
                                         TraceInternal.TraceVerbose("stage=" + (int)output.Stage + " hierarchy[stage]=" + _hierarchy[(int)output.Stage]);
-                                        ArrayList stageData = (ArrayList)_data[(int)_hierarchy[(int)output.Stage]];   // Get the data for the appropriate stage
+                                        Grouping stageData = _data[(int)_hierarchy[(int)output.Stage]];   // Get the data for the appropriate stage
 
                                         if (stageData.Count > 0)
                                         {
                                             int count = 0;
-                                            DictionaryEntry existing;
+                                            KeyValuePair<string, object> existing;
                                             do
                                             {
-                                                existing = (DictionaryEntry)stageData[count];
+                                                existing = (KeyValuePair<string, object>)stageData[count];
                                                 if ((string)existing.Key == key)
                                                 {
                                                     TraceInternal.TraceVerbose("[" + _sessionId + "] Remove stage data: key=" + key);
                                                     stageData.RemoveAt(count);
                                                     TraceInternal.TraceVerbose("[" + _sessionId + "] Update stage data: key=" + key);
                                                     value = existing.Value.ToString() + "\r\n" + receivedData;
-                                                    item = new DictionaryEntry(key, value);
+                                                    item = new KeyValuePair<string, object>(key, value);
                                                     break;
                                                 }
                                                 else
@@ -625,21 +623,21 @@ namespace WorkflowLibrary
 
                                 key = (string)output.Value;
                                 value = receivedData;
-                                item = new DictionaryEntry(key,value);
+                                item = new KeyValuePair<string, object>(key, value);
                                 TraceInternal.TraceVerbose("Data: key=" + key + " value=" + value);
 
                                 try
                                 {
                                     TraceInternal.TraceVerbose("stage=" + (int)output.Stage + " hierarchy[stage]=" + _hierarchy[(int)output.Stage]);
-                                    ArrayList stageData = (ArrayList)_data[(int)_hierarchy[(int)output.Stage]];   // Get the data for the appropriate stage
+                                    Grouping stageData = _data[(int)_hierarchy[(int)output.Stage]];   // Get the data for the appropriate stage
 
                                     if (stageData.Count>0)
                                     {
                                         int count = 0;
-                                        DictionaryEntry existing;
+                                        KeyValuePair<string, object> existing;
                                         do
                                         {
-                                            existing = (DictionaryEntry)stageData[count];
+                                            existing = (KeyValuePair<string, object>)stageData[count];
                                             if ((string)existing.Key == key)
                                             {
                                                 TraceInternal.TraceVerbose("[" + _sessionId + "] Remove stage data: key=" + key);
@@ -685,15 +683,16 @@ namespace WorkflowLibrary
             }
         }
 
-        public void Update(ref ArrayList data, ArrayList parentHierarchy)
+        public void Update(ref List<Grouping> data, List<int> parentHierarchy)
         {
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
-            tempData = (ArrayList)_localData.Clone();                // Preserve the localData and clone.
-            int dataID = data.Add(tempData);                        // add the tempData pointer to the data array list.
+            _tempData = new Grouping(_localData);                // Preserve the localData and clone.
+            data.Add(_tempData);
+            int dataID = data.Count - 1;                            // add the _tempData pointer to the data array list.
             TraceInternal.TraceVerbose("[" + _sessionId + "] Add local data to global data as dataID=" + dataID);
-            _hierarchy = (ArrayList)parentHierarchy.Clone();         // Copy the parent hierarchy.
-            _hierarchy.Insert((int)StageType.Item, dataID);          // Add the tempData reference to the end.
+            _hierarchy = new List<int>(parentHierarchy);        // Copy the parent hierarchy.
+            _hierarchy.Insert((int)StageType.Item, dataID);         // Add the _tempData reference to the end.
             TraceInternal.TraceVerbose("[" + _sessionId + "] Add dataId to hierarchy");
 
             for (int i = 0; i < _hierarchy.Count; i++)

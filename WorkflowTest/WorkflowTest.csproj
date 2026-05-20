@@ -10,6 +10,11 @@
     <ProjectReference Include="..\WorkflowLibrary\WorkflowLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="TracerLibrary">
+      <HintPath>..\ThirdParty\Tracer\net6.0\TracerLibrary.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
     <None Update="workflow.job">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

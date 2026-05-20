@@ -57,7 +57,6 @@ namespace WorkflowLibrary
             int process = 0;
             cancel = false;
             terminate = false;
-            Groupings replace = new Groupings();
 
             Debug.WriteLine("In Start() " + this._description + "(" + this.ID + ")");
 
@@ -103,14 +102,14 @@ namespace WorkflowLibrary
 
                     process = 1;  // nothing to process?
 
-                    // This is where the descision is made to throw the message
+                    // This is where the decision is made to throw the message
                     // Possibly send the throw decision
 
                     if ((@throw.Count > 0) && (cancel == false) && (terminate == false))
                     {
                         foreach (Node node in @throw)
                         {
-                            bool result = node.Link.Evaluate(replace.ReplaceGrouping(node.Link.Expression, _data, _hierarchy));
+                            bool result = node.Link.Evaluate(Replacer.ReplaceGrouping(node.Link.Expression, _data, _hierarchy));
                             if (((result == true) && (process == 0)) || ((result == false) && (process > 0)))
                             {
                                 token = new Token(_sessionId);
@@ -147,7 +146,7 @@ namespace WorkflowLibrary
                     process = item.Perform();
                     if (process == 0)
                     {
-                        TraceInternal.TraceVerbose("[" + sessionId + "] Ok (" + process + ")");
+                        TraceInternal.TraceVerbose("[" + sessionId + "] OK (" + process + ")");
                     }
                     else
                     {
@@ -239,21 +238,21 @@ namespace WorkflowLibrary
             Debug.WriteLine("Out Activate()");
         }
 
-        public override void Update(ref ArrayList data, ArrayList parentHierarchy)
+        public override void Update(ref List<Grouping> data, List<int> parentHierarchy)
         {
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
-            tempData = (ArrayList)_localData.Clone();                    // Preserve the local data and clone.
-            _dataId = data.Add(tempData);                                // add the temp date pointer to the data array list.
+            _tempData = new Grouping(_localData);                    // Preserve the local data and clone.
+            _dataId = data.Count - 1;                                   // add the temp date pointer to the data array list.
             if (_hierarchy.Count == 0)
             {
-                _hierarchy.Insert((int)StageType.Process, -1);         // fix issue where we don't have a process -1 means don't check now
+                _hierarchy.Insert((int)StageType.Process, -1);          // fix issue where we don't have a process -1 means don't check now
             }
             else
             {
-                _hierarchy = (ArrayList)parentHierarchy.Clone();     // Copy the parent hierarchy
+                _hierarchy = new List<int>(parentHierarchy);            // Copy the parent hierarchy
             }
-            _hierarchy.Insert((int)StageType.Job, _dataId);     // update the local hierarchy.
+            _hierarchy.Insert((int)StageType.Job, _dataId);             // update the local hierarchy.
             for (int i = 0; i < _hierarchy.Count; i++)
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] hierarchy[" + i.ToString() + "]=" + _hierarchy[i].ToString());

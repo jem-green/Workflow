@@ -127,26 +127,24 @@ namespace WorkflowLibrary
                         xmlwOutput.WriteElementString("input", item.Input.ToString());                          // This writes out <input>1</input>
                         xmlwOutput.WriteElementString("output", item.Output.ToString());                        // This writes out <output>1</output>
 
-                        // Also store any item data
+                        // Also store any keyValuePair data
                         xmlwOutput.WriteStartElement("itemdata");
-                        ArrayList i = item.LocalData;
+                        Grouping grouping = item.LocalData;
 
-                        if (i.Count > 0)
+                        if (grouping.Count > 0)
                         {
-                            
-                            foreach (Hashtable grouping in i)
+
+                            foreach (KeyValuePair<string, object> keyValuePair in grouping)
                             {
-                                foreach (DictionaryEntry DE in grouping)
+                                if (keyValuePair.Key.ToString() != "0")
                                 {
-                                    if (DE.Key.ToString() != "0")
-                                    {
-                                        xmlwOutput.WriteStartElement("data");
-                                        xmlwOutput.WriteElementString("key", DE.Key.ToString());
-                                        xmlwOutput.WriteElementString("value", DE.Value.ToString());
-                                        xmlwOutput.WriteEndElement();
-                                    }
+                                    xmlwOutput.WriteStartElement("data");
+                                    xmlwOutput.WriteElementString("key", keyValuePair.Key.ToString());
+                                    xmlwOutput.WriteElementString("value", keyValuePair.Value.ToString());
+                                    xmlwOutput.WriteEndElement();
                                 }
                             }
+
                         }
 
                         xmlwOutput.WriteEndElement();
@@ -1483,7 +1481,7 @@ namespace WorkflowLibrary
                                                     else if (o.GetType() == typeof(KeyValuePair<string,object>))
                                                     {
                                                         KeyValuePair<string, object> kvp = (KeyValuePair<string, object>)o;
-                                                        job.AddData(kvp.Key, kvp.Value);
+                                                        job.AddLocalData(kvp.Key, kvp.Value);
                                                     }
                                                 }
 
@@ -1556,7 +1554,7 @@ namespace WorkflowLibrary
                                                     else if (o.GetType() == typeof(KeyValuePair<string, object>))
                                                     {
                                                         KeyValuePair<string, object> kvp = (KeyValuePair<string, object>)o;
-                                                        task.AddData(kvp.Key, kvp.Value);
+                                                        task.AddLocalData(kvp.Key, kvp.Value);
                                                     }
                                                 }
 
@@ -1722,63 +1720,63 @@ namespace WorkflowLibrary
                                                     }
                                                 case "process":
                                                     {
-                                                        process.AddData(key, value);
+                                                        process.AddLocalData(key, value);
                                                         key = "";
                                                         value = "";
                                                         break;
                                                     }
                                                 case "job":
                                                     {
-                                                        job.AddData(key, value);
+                                                        job.AddLocalData(key, value);
                                                         key = "";
                                                         value = "";
                                                         break;
                                                     }
                                                 case "subjob":
                                                     {
-                                                        job.AddData(key, value);
+                                                        job.AddLocalData(key, value);
                                                         key = "";
                                                         value = "";
                                                         break;
                                                     }
                                                 case "task":
                                                     {
-                                                        task.AddData(key, value);
+                                                        task.AddLocalData(key, value);
                                                         key = "";
                                                         value = "";
                                                         break;
                                                     }
                                                 case "subtask":
                                                     {
-                                                        task.AddData(key, value);
+                                                        task.AddLocalData(key, value);
                                                         key = "";
                                                         value = "";
                                                         break;
                                                     }
                                                 case "item":
                                                     {
-                                                        item.AddData(key, value);
+                                                        item.AddLocalData(key, value);
                                                         key = "";
                                                         value = "";
                                                         break;
                                                     }
                                                 case "decision":
                                                     {
-                                                        decision.AddData(key, value);
+                                                        decision.AddLocalData(key, value);
                                                         key = "";
                                                         value = "";
                                                         break;
                                                     }
                                                 case "event":
                                                     {
-                                                        @event.AddData(key, value);
+                                                        @event.AddLocalData(key, value);
                                                         key = "";
                                                         value = "";
                                                         break;
                                                     }
                                                 case "connector":
                                                     {
-                                                        connector.AddData(key, value);
+                                                        connector.AddLocalData(key, value);
                                                         key = "";
                                                         value = "";
                                                         break;
@@ -2185,7 +2183,7 @@ namespace WorkflowLibrary
         public static Collection<object> JoinPipes(Collection<object> container)
         {
 
-            // Link the pipes to the item connectors
+            // Link the pipes to the keyValuePair connectors
 
             foreach (object j in container)
             {

@@ -14,25 +14,33 @@ namespace WorkflowLibrary
     {
         #region Fields
 
-        private string _sessionId = "";
-        private ArrayList _data = new ArrayList();
+        private string _tokenId = "";
+        private Grouping _data = new Grouping();
 
         #endregion
         #region Constructors
 
-        public Token(string sessionId)
+        public Token(string tokenId)
         {
-            _sessionId = sessionId;
+            _tokenId = tokenId;
         }
 
         #endregion
         #region Properties
 
-        public ArrayList Data
+        public Grouping Data
         {
             get
             {
                 return (_data);
+            }
+        }
+
+        public string TokenId
+        {
+            get
+            {
+                return (_tokenId);
             }
         }
 
@@ -50,13 +58,14 @@ namespace WorkflowLibrary
             bool add = false;
             try
             {
-                TraceInternal.TraceVerbose("[" + _sessionId + "] Add data: key=" + key + " value=" + value);
-                for (int i = 0; i < _data.Count; i++)
+                TraceInternal.TraceVerbose("[" + _tokenId + "] Add data: key=" + key + " value=" + value);
+                KeyValuePair<string, object> item = new KeyValuePair<string, object>(key, value);
+                for (int count = 0; count < _data.Count; count++)
                 {
-                    DictionaryEntry item = (DictionaryEntry)_data[i];
-                    if ((string)item.Key == key)
+                    KeyValuePair<string, object> existing = _data[count];
+                    if (existing.Key == item.Key)
                     {
-                        _data[i] = new DictionaryEntry(key, value);
+                        _data[count] = item;
                         add = true;
                         break;
                     }
@@ -77,8 +86,17 @@ namespace WorkflowLibrary
             bool add = false;
             try
             {
-                TraceInternal.TraceVerbose("[" + _sessionId + "] Add data: key=" + key + " value=" + value);
-                DictionaryEntry item = new DictionaryEntry(key, value);
+                TraceInternal.TraceVerbose("[" + _tokenId + "] Add data: key=" + key + " value=" + value);
+                KeyValuePair<string, object> item = new KeyValuePair<string, object>(key, value);
+                for (int count = 0; count < _data.Count; count++)
+                {
+                    if ((string)item.Key == key)
+                    {
+                        _data.RemoveAt(count);
+                        add = true;
+                        break;
+                    }
+                }
                 _data.Add(item);
                 add = true;
             }
@@ -96,12 +114,13 @@ namespace WorkflowLibrary
             object value = null;
             try
             {
-                TraceInternal.TraceVerbose("[" + _sessionId + "] Select data: key=" + key);
-                foreach (DictionaryEntry item in _data)
+                TraceInternal.TraceVerbose("[" + _tokenId + "] Select data: key=" + key);
+                for (int count = 0; count < _data.Count; count++)
                 {
-                    if ((string)item.Key == key)
+                    KeyValuePair<string, object> existing = _data[count];
+                    if (existing.Key == key)
                     {
-                        value = item.Value;
+                        value = existing.Value;
                         break;
                     }
                 }
@@ -120,13 +139,13 @@ namespace WorkflowLibrary
             bool remove = false;
             try
             {
-                TraceInternal.TraceVerbose("[" + _sessionId + "] Remove data: key=" + key);
-                for (int i = 0; i < _data.Count; i++)
+                TraceInternal.TraceVerbose("[" + _tokenId + "] Remove data: key=" + key);
+                for (int count = 0; count < _data.Count; count++)
                 {
-                    DictionaryEntry item = (DictionaryEntry)_data[i];
+                    KeyValuePair<string, object> item = _data[count];
                     if ((string)item.Key == key)
                     {
-                        _data.RemoveAt(i);
+                        _data.RemoveAt(count);
                         remove = true;
                         break;
                     }

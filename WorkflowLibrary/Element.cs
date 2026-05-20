@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using TracerLibrary;
 
@@ -12,12 +13,12 @@ namespace WorkflowLibrary
         protected string _id = "";
         protected string _sessionId;
         protected string _name = "";
-        protected string _description = "";
+        protected string _description = ""; 
 
-        protected ArrayList _localData;
-        protected ArrayList tempData;
-        protected ArrayList _data;
-        protected ArrayList _hierarchy;
+        protected Grouping _localData;          // Container for KeyValuePair<string,object>
+        protected Grouping _tempData;           // Container for KeyValuePair<string,object>
+        protected List<Grouping> _data;
+        protected List<int> _hierarchy;
         protected int _dataId;
 
         protected bool cancel = false;
@@ -29,10 +30,10 @@ namespace WorkflowLibrary
         public Element()
         {
             _dataId = _dataId + 1;
-            _data = new ArrayList();
-            _localData = new ArrayList();
-            tempData = new ArrayList();
-            _hierarchy = new ArrayList(4);
+            _data = new List<Grouping>();
+            _localData = new Grouping();
+            _tempData = new Grouping();
+            _hierarchy = new List<int>();
             terminate = false;
             cancel = false;
             _enabled = false;
@@ -41,10 +42,10 @@ namespace WorkflowLibrary
         public Element(string id)
         {
             _dataId = _dataId + 1;
-            _data = new ArrayList();
-            _localData = new ArrayList();
-            tempData = new ArrayList();
-            _hierarchy = new ArrayList(4);
+            _data = new List<Grouping>();
+            _localData = new Grouping();
+            _tempData = new Grouping();
+            _hierarchy = new List<int>();
             terminate = false;
             cancel = false;
             _enabled = false;
@@ -96,7 +97,7 @@ namespace WorkflowLibrary
             }
         }
 
-        public ArrayList Hierarchy
+        public List<int> Hierarchy
         {
             get
             {
@@ -116,7 +117,7 @@ namespace WorkflowLibrary
             }
         }
 
-        public ArrayList Data
+        public List<Grouping> Data
         {
             get
             {
@@ -124,7 +125,7 @@ namespace WorkflowLibrary
             }
         }
 
-        public ArrayList LocalData
+        public Grouping LocalData
         {
             get
             { 
@@ -140,55 +141,88 @@ namespace WorkflowLibrary
         #region Methods
 
         /// <summary>
-        /// Update data in ArrayList of Dictionary objects
+        /// Update object by key to List<string,KeyValuePair<string,object>>
+        /// Will add it doesn't exist, otherwise it will update the value for the key
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
         public bool UpdateData(string key, object value)
         {
-            bool add = false;
+            bool update = false;
             try
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Add data: key=" + key + " value=" + value);
-                for (int i = 0; i < _data.Count; i++)
+                KeyValuePair<string, object> item = new KeyValuePair<string, object>(key, value);
+                for (int stage = 0; stage < _data.Count; stage++)
                 {
-                    DictionaryEntry item = (DictionaryEntry)_data[i];
-                    if ((string)item.Key == key)
+                    Grouping grouping = _data[stage];
+                    KeyValuePair<string, object> existing;
+                    int count = 0;
+                    do
                     {
-                        _data[i] = new DictionaryEntry(key, value);
-                        add = true;
-                        break;
+                        existing = grouping[count];
+                        if ((string)existing.Key == key)
+                        {
+                            TraceInternal.TraceVerbose("[" + _sessionId + "] Replace data: key=" + key);
+                            grouping.RemoveAt(count);
+                            break;
+                        }
+                        else
+                        {
+                            count = count + 1;
+                        }
                     }
+                    while (count < grouping.Count);
+                    grouping.Add(item);
                 }
             }
             catch { }
-            return (add);
+            return (update);
         }
 
-
         /// <summary>
-        /// Add data to ArrayList of Dictionary objects
+        /// Add object by key to List<string,KeyValuePair<string,object>>
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="value"></param>
         /// <returns></returns>
         public virtual bool AddData(string key, object value)
         {
-            bool add = false;
+            bool update = false;
             try
             {
-                TraceInternal.TraceVerbose("[" + _sessionId + "] Add local data: key=" + key + " value=" + value);
-                DictionaryEntry item = new DictionaryEntry(key, value);
-                _localData.Add(item);
-                add = true;
+                TraceInternal.TraceVerbose("[" + _sessionId + "] Add data: key=" + key + " value=" + value);
+                KeyValuePair<string, object> item = new KeyValuePair<string, object>(key, value);
+                for (int stage = 0; stage < _data.Count; stage++)
+                {
+                    Grouping grouping = _data[stage];
+                    KeyValuePair<string, object> existing;
+                    int count = 0;
+                    do
+                    {
+                        existing = grouping[count];
+                        if ((string)existing.Key == key)
+                        {
+                            TraceInternal.TraceVerbose("[" + _sessionId + "] Replace data: key=" + key);
+                            grouping.RemoveAt(count);
+                            break;
+                        }
+                        else
+                        {
+                            count = count + 1;
+                        }
+                    }
+                    while (count < grouping.Count);
+                    grouping.Add(item);
+                    update = true;
+                }
             }
             catch { }
-            return (add);
+            return (update);
         }
 
         /// <summary>
-        /// Select object by key from ArrayList of Dictionary objects
+        /// Select object by key from List<string,KeyValuePair<string,object>>
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -198,12 +232,18 @@ namespace WorkflowLibrary
             try
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Select data: key=" + key);
-                foreach (DictionaryEntry item in _data)
+                for (int stage = 0; stage < _data.Count; stage++)
                 {
-                    if ((string)item.Key == key)
+                    Grouping grouping = _data[stage];
+                    KeyValuePair<string, object> item;
+                    for (int count = 0; count < grouping.Count; count++)
                     {
-                        value = item.Value;
-                        break;
+                        item = grouping[count];
+                        if ((string)item.Key == key)
+                        {
+                            value = item.Value;
+                            break;
+                        }
                     }
                 }
             }
@@ -222,12 +262,128 @@ namespace WorkflowLibrary
             try
             {
                 TraceInternal.TraceVerbose("[" + _sessionId + "] Select data: key=" + key);
-                for (int i = 0; i < _data.Count; i++)
+                for (int stage = 0; stage < _data.Count; stage++)
                 {
-                    DictionaryEntry item = (DictionaryEntry)_data[i];
+                    Grouping grouping = _data[stage];
+                    for (int count = 0; count < grouping.Count; count++)
+                    {
+                        KeyValuePair<string, object> item = grouping[count];
+                        if ((string)item.Key == key)
+                        {
+                            grouping.RemoveAt(count);
+                            remove = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            catch { }
+            return (remove);
+        }
+
+        /// <summary>
+        /// Select object by key from List<string,KeyValuePair<string,object>>
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public virtual object SelectLocalData(string key)
+        {
+            object value = null;
+            try
+            {
+                TraceInternal.TraceVerbose("[" + _sessionId + "] Select local data: key=" + key);
+                for (int count = 0; count < _localData.Count; count++)
+                {
+                    KeyValuePair<string, object> item = _localData[count];
                     if ((string)item.Key == key)
                     {
-                        _data.RemoveAt(i);
+                        value = item.Value;
+                        break;
+                    }
+                }
+            }
+            catch { }
+            return (value);
+        }
+
+        /// <summary>
+        /// Add data to List<string,KeyValuePair<string,object>>
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public virtual bool AddLocalData(string key, object value)
+        {
+            bool add = false;
+            try
+            {
+                TraceInternal.TraceVerbose("[" + _sessionId + "] Add local data: key=" + key + " value=" + value);
+                KeyValuePair<string, object> item = new KeyValuePair<string, object>(key, value);
+                for(int count = 0; count < _localData.Count; count++)
+                {
+                    KeyValuePair<string, object> existing = _localData[count];
+                    if ((string)existing.Key == item.Key)
+                    {
+                        TraceInternal.TraceVerbose("[" + _sessionId + "] Remove local data: key=" + key);
+                        _localData.RemoveAt(count);
+                        add = true;
+                        break;
+                    }
+                }
+                _localData.Add(item);
+                add = true;
+            }
+            catch { }
+            return (add);
+        }
+
+        /// <summary>
+        /// Update data in List<string,KeyValuePair<string,object>>
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public virtual bool UpdateLocalData(string key, object value)
+        {
+            bool update = false;
+            try
+            {
+                TraceInternal.TraceVerbose("[" + _sessionId + "] Update local data: key=" + key + " value=" + value);
+                KeyValuePair<string, object> item = new KeyValuePair<string, object>(key, value);
+                for (int count = 0; count < _localData.Count; count++)
+                {
+                    KeyValuePair<string, object> existing = _localData[count];
+                    if (existing.Key == item.Key)
+                    {
+                        TraceInternal.TraceVerbose("[" + _sessionId + "] Update local data: key=" + key);
+                        _localData.RemoveAt(count);
+                        break;
+                    }
+                }
+                _localData.Add(item);
+                update = true;
+            }
+            catch { }
+            return (update);
+        }
+
+        /// <summary>
+        /// Remove object by key from List<string,KeyValuePair<string,object>>  
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public virtual bool RemoveLocalData(string key)
+        {
+            bool remove = false;
+            try
+            {
+                TraceInternal.TraceVerbose("[" + _sessionId + "] Remove local data: key=" + key);
+                for (int count = 0; count < _localData.Count; count++)
+                {
+                    KeyValuePair<string, object> item = (KeyValuePair<string, object>)_localData[count];
+                    if ((string)item.Key == key)
+                    {
+                        _localData.RemoveAt(count);
                         remove = true;
                         break;
                     }
@@ -236,6 +392,7 @@ namespace WorkflowLibrary
             catch { }
             return (remove);
         }
+
         #endregion Methods
     }
 }

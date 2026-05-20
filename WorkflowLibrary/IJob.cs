@@ -10,7 +10,7 @@ namespace WorkflowLibrary
         #region Properties
 
         List<Node> Catch { get; }
-        ArrayList Data { get; }
+        List<Grouping> Data { get; }
         string Description { get; set; }
         bool Enabled { get; set; }
         string ID { get; }
@@ -33,7 +33,7 @@ namespace WorkflowLibrary
         int Perform(int index, string sessionId);
         bool Remove(Task task);
         bool RemoveData(string key);
-        void Update(ref ArrayList Data, ArrayList Hierarchy);
+        void Update(ref List<Grouping> Data, List<int> Hierarchy);
         void Start();
         void Start(int index);
         void Start(string sessionId);

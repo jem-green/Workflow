@@ -36,13 +36,13 @@ namespace WorkflowLibrary
         public Link()
         {
             _linkId = _linkId + 1;
-            _localData = new ArrayList();
+            _localData = new Grouping();
             _id = "link_" + _linkId.ToString();
         }        
         
         public Link(string Id)
         {
-            _localData = new ArrayList();
+            _localData = new Grouping();
             _id = Id;
             if (Id.StartsWith("link_"))
             {
@@ -133,6 +133,15 @@ namespace WorkflowLibrary
         }
 
         /// <summary>
+        /// Immediate message peek from the queue
+        /// </summary>
+        /// <returns></returns>
+        public Token PeekItem()
+        {
+            return (PeekItem(0));
+        }
+
+        /// <summary>
         /// Take a peek of messages on the queue
         /// </summary>
         /// <param name="maxWait"></param>
@@ -207,12 +216,12 @@ namespace WorkflowLibrary
 
         public override void Update()
         {
-            ArrayList data = new ArrayList();
-            ArrayList parentHierarchy = new ArrayList();
+            List<Grouping> data = new List<Grouping>();
+            List<int> parentHierarchy = new List<int>();
             Update(ref data, parentHierarchy);
         }
 
-        public override void Update(ref ArrayList data, ArrayList parentHierarchy)
+        public override void Update(ref List<Grouping> data, List<int> parentHierarchy)
         {
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
             

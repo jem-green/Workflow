@@ -14,13 +14,13 @@ namespace WorkflowLibrary
         string Description { get; set; }
         string Next {get;set; }
         string Previous {get;set; }
-        ArrayList LocalData {get; }
+        Grouping LocalData {get; }
         State.StateType State { get; }
         #endregion
         #region Methods
         void Activate();
         bool Add(Item item);
-        bool AddData(string key, object value);
+        bool AddLocalData(string key, object value);
         void Cancel();
         object Clone();
         int Perform();
@@ -34,7 +34,7 @@ namespace WorkflowLibrary
         void Start(string sessionId);
         void Start(int index, string sessionId);
         void Terminate();
-        void Update(ref ArrayList data, ArrayList hierarchy);
+        void Update(ref List<Grouping> data, List<int> hierarchy);
 
         #endregion
     }

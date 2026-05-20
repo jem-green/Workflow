@@ -36,7 +36,7 @@ namespace WorkflowLibrary
         #endregion Constructors
         #region Properties
 
-        #endregion Properites
+        #endregion Properties
         #region Methods
 
         #endregion Methods

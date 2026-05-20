@@ -13,13 +13,13 @@ namespace WorkflowLibrary
         string Name { get; set; }
         bool Enabled { get; set; }
         string Description { get; set; }
-        ArrayList Data { get; }
+        List<Grouping> Data { get; }
         State.StateType State { get; }
 
         #endregion
         #region Methods
 
-        bool AddData(string key, object value);
+        bool AddLocalData(string key, object value);
         bool RemoveData(string key);
         bool Add(IActivity activity);
         bool Remove(IActivity activity);

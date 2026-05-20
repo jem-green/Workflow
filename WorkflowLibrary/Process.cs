@@ -120,8 +120,6 @@ namespace WorkflowLibrary
             _state = StateType.Inactive;
             TraceInternal.TraceVerbose("[" + sessionId + "] State=" + StateDescription(_state));
 
-            Groupings replace = new Groupings();
- 
             // link up the objects
 
             linkObjects(_activities);
@@ -254,17 +252,18 @@ namespace WorkflowLibrary
 
         public override void Update()
         {
-            ArrayList data = new ArrayList();
-            ArrayList parentHierarchy = new ArrayList();
+            List<Grouping> data = new List<Grouping>();
+            List<int> parentHierarchy = new List<int>();
             Update(ref data, parentHierarchy);
         }
 
-        public override void Update(ref ArrayList data, ArrayList parentHierarchy)
+        public override void Update(ref List<Grouping> data, List<int> parentHierarchy)
         {
             Debug.WriteLine("[" + _sessionId + "] In Update() " + _id + "(" + _name + ")");
 
-            tempData = (ArrayList)_localData.Clone();                    // Preserve the localdata and clone.
-            _dataId = data.Add(tempData);                                // add the tempdate pointer to the data array list.
+            _tempData = new Grouping(_localData);                    // Preserve the localdata and clone.
+            data.Add(_tempData);                                    // add the tempdata to the data array list.
+            _dataId = data.Count - 1;                                // add the tempdate pointer to the data array list.
             _hierarchy.Insert((int)StageType.Process, _dataId);     // update the local hierarchy.
             //if (log.IsDebugEnabled == true)
             //{
@@ -280,7 +279,7 @@ namespace WorkflowLibrary
                 {
                     Job job = (Job)activity;
                     TraceInternal.TraceVerbose("[" + _sessionId + "] Update task " + job.ID + "(" + job.Name + ") data");
-                    this._data = data;
+                    _data = data;
                     job.Update(ref data, _hierarchy);   // Propagate the data and hierarchy
                 }
                 else if (activity.GetType() == typeof(Event))

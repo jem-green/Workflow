@@ -61,7 +61,7 @@ namespace WorkflowLibrary
         public virtual void Update()
         { }
 
-        public virtual void Update(ref ArrayList data, ArrayList parentHierarchy)
+        public virtual void Update(ref List<Grouping> data, List<int> parentHierarchy)
         { }
 
         public virtual void Cancel()
